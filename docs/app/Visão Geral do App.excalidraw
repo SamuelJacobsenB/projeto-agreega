@@ -1275,13 +1275,13 @@
       "updated": 1789999266830,
       "link": null,
       "locked": false,
-      "text": "API client\n ↓\nTanStack Query\n ↓\nFeature hook\n ↓\nComponente\n\nTipos TypeScript representam o contrato da API.\nDTOs não precisam virar tipos para cada componente.\n\nEstado de servidor ≠ estado local da UI.",
+      "text": "API client\n ↓\nTanStack Query\n ↓\nFeature hook\n ↓\nComponente\n\nTipos TypeScript representam o contrato da API.\ndtoss não precisam virar tipos para cada componente.\n\nEstado de servidor ≠ estado local da UI.",
       "fontSize": 17,
       "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "API client\n ↓\nTanStack Query\n ↓\nFeature hook\n ↓\nComponente\n\nTipos TypeScript representam o contrato da API.\nDTOs não precisam virar tipos para cada componente.\n\nEstado de servidor ≠ estado local da UI.",
+      "originalText": "API client\n ↓\nTanStack Query\n ↓\nFeature hook\n ↓\nComponente\n\nTipos TypeScript representam o contrato da API.\ndtoss não precisam virar tipos para cada componente.\n\nEstado de servidor ≠ estado local da UI.",
       "autoResize": false,
       "lineHeight": 1.25
     }
