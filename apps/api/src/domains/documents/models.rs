@@ -8,12 +8,14 @@ pub struct Document {
     pub id: Uuid,
 
     pub project_id: Uuid,
+    pub stage_id: Uuid,
+    pub task_id: Option<Uuid>,
 
     pub name: String,
     pub document_type: DocumentType,
     pub status: DocumentStatus,
 
-    pub current_version: i32,
+    pub current_version: i16,
 
     pub created_by: Uuid,
 

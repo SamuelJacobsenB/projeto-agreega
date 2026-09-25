@@ -10,7 +10,7 @@ pub struct DocumentVersion {
     pub document_id: Uuid,
     pub file_id: Uuid,
 
-    pub version: i32,
+    pub version: i16,
 
     pub uploaded_by: Uuid,
 

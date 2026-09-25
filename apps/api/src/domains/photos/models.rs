@@ -8,6 +8,9 @@ pub struct Photo {
     pub id: Uuid,
 
     pub project_id: Uuid,
+    pub stage_id: Uuid,
+    pub task_id: Option<Uuid>,
+
     pub file_id: Uuid,
 
     pub description: Option<String>,

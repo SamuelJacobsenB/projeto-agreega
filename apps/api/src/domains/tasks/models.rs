@@ -15,7 +15,7 @@ pub struct Task {
 
     pub weight: Decimal,
     pub progress: Decimal,
-    pub order: i32,
+    pub order: i16,
 
     pub status: TaskStatus,
 

@@ -23,6 +23,8 @@ pub struct Project {
     pub estimated_end_date: Option<NaiveDate>,
     pub completed_at: Option<DateTime<Utc>>,
 
+    pub cover_file_id: Option<Uuid>,
+
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

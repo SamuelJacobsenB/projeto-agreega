@@ -14,7 +14,7 @@ pub struct Stage {
     pub description: Option<String>,
 
     pub weight: Decimal,
-    pub order: i32,
+    pub order: i16,
 
     pub status: StageStatus,
 
