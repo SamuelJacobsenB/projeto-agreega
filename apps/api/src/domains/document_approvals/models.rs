@@ -8,7 +8,7 @@ pub struct DocumentApproval {
     pub id: Uuid,
 
     pub document_id: Uuid,
-    pub version_version_id: Uuid,
+    pub document_version_id: Uuid,
 
     pub requested_by: Uuid,
     pub reviewed_by: Option<Uuid>,
