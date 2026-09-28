@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// Representa uma solicitação e seu resultado de aprovação de uma versão de documento.
@@ -20,6 +21,9 @@ pub struct DocumentApproval {
     pub reviewed_at: Option<DateTime<Utc>>,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize)]
+#[sqlx(type_name = "approval_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum ApprovalStatus {
     Pending,
     Approved,

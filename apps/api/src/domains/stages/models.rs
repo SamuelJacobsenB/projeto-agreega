@@ -1,5 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// Representa uma etapa dentro de um projeto.
@@ -25,6 +26,9 @@ pub struct Stage {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "stage_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum StageStatus {
     Pending,
     InProgress,

@@ -1,5 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// Representa um pagamento ou compromisso financeiro relacionado a um projeto.
@@ -22,6 +23,9 @@ pub struct Payment {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "payment_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum PaymentStatus {
     Pending,
     Paid,

@@ -1,5 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// Representa uma tarefa pertencente a uma etapa.
@@ -28,6 +29,9 @@ pub struct Task {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "task_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum TaskStatus {
     Pending,
     InProgress,

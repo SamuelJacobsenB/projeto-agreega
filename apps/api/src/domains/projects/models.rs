@@ -1,4 +1,5 @@
 use chrono::{DateTime, NaiveDate, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// Representa um projeto administrado pela Agreega.
@@ -29,6 +30,9 @@ pub struct Project {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "project_type", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum ProjectType {
     Architecture,
     Engineering,
@@ -37,6 +41,9 @@ pub enum ProjectType {
     Other,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "project_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum ProjectStatus {
     Planning,
     InProgress,

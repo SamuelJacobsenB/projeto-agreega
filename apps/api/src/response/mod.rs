@@ -1,5 +1,17 @@
 use serde::Serialize;
 
+pub enum AppError {
+    Database(String),
+    NotFound(String),
+    Validation(String),
+    Unauthorized(String),
+    Forbidden(String),
+    BadRequest(String),
+    Internal(String),
+}
+
+pub type AppResult<T> = Result<T, AppError>;
+
 #[derive(Serialize)]
 pub struct ApiResponse<T> {
     pub success: bool,

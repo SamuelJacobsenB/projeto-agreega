@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// Representa um documento pertencente a um projeto.
@@ -23,6 +24,9 @@ pub struct Document {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "document_type", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum DocumentType {
     Contract,
     Project,
@@ -34,6 +38,9 @@ pub enum DocumentType {
     Other,
 }
 
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[sqlx(type_name = "document_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum DocumentStatus {
     Draft,
     UnderReview,
