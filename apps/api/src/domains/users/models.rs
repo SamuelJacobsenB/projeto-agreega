@@ -13,7 +13,7 @@ pub struct User {
     pub name: String,
     pub email: String,
     pub phone: Option<String>,
-    pub document: Option<String>,
+    pub cpf: Option<String>,
     pub password_hash: String,
 
     pub role: UserRole,

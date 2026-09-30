@@ -1,22 +1,35 @@
+use std::collections::BTreeMap;
+
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde::Serialize;
 
-pub enum AppError {
-    Database(String),
-    NotFound(String),
-    Validation(String),
-    Unauthorized(String),
-    Forbidden(String),
-    BadRequest(String),
-    Internal(String),
-}
+pub mod app_error;
+pub mod validated_json;
 
-pub type AppResult<T> = Result<T, AppError>;
+pub use app_error::AppError;
+pub use validated_json::ValidatedJson;
 
 #[derive(Serialize)]
 pub struct ApiResponse<T> {
     pub success: bool,
     pub message: String,
     pub data: Option<T>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fields: Option<BTreeMap<String, Vec<String>>>,
+}
+
+impl<T> IntoResponse for ApiResponse<T>
+where
+    T: Serialize,
+{
+    fn into_response(self) -> Response {
+        Json(self).into_response()
+    }
 }
 
 impl<T> ApiResponse<T> {
@@ -25,6 +38,7 @@ impl<T> ApiResponse<T> {
             success: true,
             message: message.into(),
             data,
+            fields: None,
         }
     }
 
@@ -33,6 +47,19 @@ impl<T> ApiResponse<T> {
             success: false,
             message: message.into(),
             data: None,
+            fields: None,
+        }
+    }
+
+    pub fn validation(message: impl Into<String>, fields: BTreeMap<String, Vec<String>>) -> Self {
+        Self {
+            success: false,
+            message: message.into(),
+            data: None,
+            fields: Some(fields),
         }
     }
 }
+
+pub type AppResult<T> = Result<T, AppError>;
+pub type ApiResult<T> = Result<(StatusCode, ApiResponse<T>), AppError>;

@@ -4,3 +4,4 @@ pub mod domains;
 pub mod infrastructure;
 pub mod middlewares;
 pub mod response;
+pub mod validation;

@@ -1,16 +1,23 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct CreateProjectImageRequestDto {
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub project_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub file_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_non_negative_i16"))]
     pub order: i16,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateProjectImageRequestDto {
+    #[validate(custom(function = "crate::validation::validate_non_negative_i16"))]
     pub order: Option<i16>,
 }
 

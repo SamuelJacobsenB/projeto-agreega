@@ -1,18 +1,24 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 use super::models::NotificationType;
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct CreateNotificationRequestDto {
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub user_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub title: String,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub message: String,
     pub notification_type: NotificationType,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateNotificationRequestDto {
     pub read: bool,
 }

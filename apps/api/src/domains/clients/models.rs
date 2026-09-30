@@ -8,7 +8,7 @@ pub struct Client {
     pub id: Uuid,
 
     pub company_name: Option<String>,
-    pub document: Option<String>,
+    pub cnpj: Option<String>,
 
     pub phone: Option<String>,
     pub email: Option<String>,

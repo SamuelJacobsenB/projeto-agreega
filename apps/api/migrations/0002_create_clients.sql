@@ -1,7 +1,7 @@
 CREATE TABLE clients (
     id UUID PRIMARY KEY,
     company_name VARCHAR(150),
-    document VARCHAR(20),
+    cnpj VARCHAR(14) UNIQUE,
     phone VARCHAR(20),
     email VARCHAR(255) UNIQUE,
     address VARCHAR(255),
@@ -12,6 +12,10 @@ CREATE TABLE clients (
     CONSTRAINT chk_clients_email CHECK (
         email IS NULL
         OR email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    ),
+    CONSTRAINT chk_clients_cnpj CHECK (
+        cnpj IS NULL
+        OR cnpj ~ '^\d{14}$'
     ),
     CONSTRAINT chk_clients_state CHECK (
         state IS NULL

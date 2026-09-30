@@ -6,6 +6,8 @@ impl From<User> for UserResponseDto {
             id: user.id,
             name: user.name,
             email: user.email,
+            phone: user.phone,
+            cpf: user.cpf,
             role: user.role,
             client_id: user.client_id,
             avatar_file_id: user.avatar_file_id,

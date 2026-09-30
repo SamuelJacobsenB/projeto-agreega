@@ -2,12 +2,19 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
+use validator::Validate;
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct CreateAuditLogRequestDto {
     pub user_id: Option<Uuid>,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub action: String,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub entity: String,
+
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub entity_id: Uuid,
     pub metadata: Option<Value>,
 }

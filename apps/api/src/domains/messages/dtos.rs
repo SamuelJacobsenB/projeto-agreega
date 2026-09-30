@@ -1,16 +1,23 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct CreateMessageRequestDto {
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub project_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub sender_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub content: String,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateMessageRequestDto {
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub content: Option<String>,
 }
 

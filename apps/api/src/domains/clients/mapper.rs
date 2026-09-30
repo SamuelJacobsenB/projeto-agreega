@@ -5,7 +5,7 @@ impl From<Client> for ClientResponseDto {
         ClientResponseDto {
             id: client.id,
             company_name: client.company_name,
-            document: client.document,
+            cnpj: client.cnpj,
             phone: client.phone,
             email: client.email,
             address: client.address,

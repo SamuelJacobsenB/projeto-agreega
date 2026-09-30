@@ -1,24 +1,38 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 use super::models::{DocumentStatus, DocumentType};
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct CreateDocumentRequestDto {
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub project_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub stage_id: Uuid,
+
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub task_id: Option<Uuid>,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: String,
     pub document_type: DocumentType,
     pub status: DocumentStatus,
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub created_by: Uuid,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateDocumentRequestDto {
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub stage_id: Option<Uuid>,
+
+    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub task_id: Option<Uuid>,
+
+    #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: Option<String>,
     pub document_type: Option<DocumentType>,
     pub status: Option<DocumentStatus>,
