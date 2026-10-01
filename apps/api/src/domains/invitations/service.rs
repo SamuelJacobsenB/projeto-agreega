@@ -11,6 +11,7 @@ use crate::{
         },
         users::models::User,
     },
+    infrastructure::email::EmailService,
     response::{AppError, AppResult},
     security::{password::PasswordService, token::TokenService},
 };
@@ -26,9 +27,10 @@ impl Service {
 
     pub async fn create_invitation(
         pool: &PgPool,
+        email_service: &EmailService,
         dto: &CreateInvitationRequestDto,
         invited_by: Uuid,
-    ) -> AppResult<(Invitation, String)> {
+    ) -> AppResult<Invitation> {
         Self::ensure_email_available(pool, &dto.email).await?;
 
         let token = TokenService::new_token()?;
@@ -38,7 +40,11 @@ impl Service {
         let invitation =
             Repository::create_invitation(pool, dto, invited_by, &token_hash, expires_at).await?;
 
-        Ok((invitation, token))
+        email_service
+            .send_invitation_email(&dto.email, &token)
+            .await?;
+
+        Ok(invitation)
     }
 
     pub async fn accept_invitation(

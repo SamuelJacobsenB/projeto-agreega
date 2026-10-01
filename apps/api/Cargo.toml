@@ -32,3 +32,5 @@ hex = "0.4"
 getrandom = "0.4"
 
 axum-extra = { version = "0.12.6", features = ["cookie"] }
+
+resend-rs = "0.33"

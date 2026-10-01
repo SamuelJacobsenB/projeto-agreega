@@ -112,7 +112,13 @@ impl Handler {
         State(state): State<AppState>,
         ValidatedJson(dto): ValidatedJson<RequestPasswordResetRequestDto>,
     ) -> ApiResult<()> {
-        Service::request_password_reset(&state.pool, &dto.email).await?;
+        Service::request_password_reset(
+            &state.pool,
+            &state.email_service,
+            &state.config.app_url,
+            &dto.email,
+        )
+        .await?;
 
         Ok((
             StatusCode::OK,

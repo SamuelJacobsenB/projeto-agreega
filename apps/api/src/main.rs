@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use agreega_api::{
     app::{AppState, router::create_router},
     config::Config,
-    infrastructure::db::connection::create_pool,
+    infrastructure::{db::connection::create_pool, email::EmailService},
 };
 
 #[tokio::main]
@@ -15,7 +15,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool = create_pool(&config.database_url).await?;
 
-    let state = AppState { pool, config };
+    let email_service = EmailService::new(config.email_api_key.clone(), config.email_from.clone());
+
+    let state = AppState {
+        pool,
+        config,
+        email_service,
+    };
 
     let app = create_router(state);
 

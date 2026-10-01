@@ -50,9 +50,3 @@ pub struct InvitationResponseDto {
     pub accepted_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
 }
-
-#[derive(Serialize)]
-pub struct CreatedInvitationResponseDto {
-    pub invitation: InvitationResponseDto,
-    pub token: String,
-}

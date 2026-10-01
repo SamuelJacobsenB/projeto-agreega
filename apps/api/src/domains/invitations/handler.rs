@@ -7,10 +7,7 @@ use uuid::Uuid;
 use crate::{
     app::AppState,
     domains::invitations::{
-        dtos::{
-            AcceptInvitationRequestDto, CreateInvitationRequestDto, CreatedInvitationResponseDto,
-            InvitationResponseDto,
-        },
+        dtos::{AcceptInvitationRequestDto, CreateInvitationRequestDto, InvitationResponseDto},
         service::Service,
     },
     response::{ApiResponse, ApiResult, ValidatedJson},
@@ -40,17 +37,16 @@ impl Handler {
         State(state): State<AppState>,
         AuthUser { id: invited_by, .. }: AuthUser,
         ValidatedJson(dto): ValidatedJson<CreateInvitationRequestDto>,
-    ) -> ApiResult<CreatedInvitationResponseDto> {
-        let (invitation, token) = Service::create_invitation(&state.pool, &dto, invited_by).await?;
-
-        let response = CreatedInvitationResponseDto {
-            invitation: InvitationResponseDto::from(invitation),
-            token,
-        };
+    ) -> ApiResult<InvitationResponseDto> {
+        let invitation =
+            Service::create_invitation(&state.pool, &state.email_service, &dto, invited_by).await?;
 
         Ok((
             StatusCode::CREATED,
-            ApiResponse::success("Convite criado e enviado com sucesso.", Some(response)),
+            ApiResponse::success(
+                "Convite criado e enviado com sucesso.",
+                Some(InvitationResponseDto::from(invitation)),
+            ),
         ))
     }
 

@@ -6,6 +6,7 @@ use crate::{
         auth::{dtos::AuthTokens, repository::Repository},
         users::models::User,
     },
+    infrastructure::email::EmailService,
     response::{AppError, AppResult},
     security::{jwt::JwtService, password::PasswordService, token::TokenService},
 };
@@ -62,7 +63,12 @@ impl Service {
         Repository::revoke_refresh_session(pool, &TokenService::hash_token(refresh_token)).await
     }
 
-    pub async fn request_password_reset(pool: &PgPool, email: &str) -> AppResult<Option<String>> {
+    pub async fn request_password_reset(
+        pool: &PgPool,
+        email_service: &EmailService,
+        app_url: &str,
+        email: &str,
+    ) -> AppResult<Option<String>> {
         let Some(user) = Repository::find_user_by_email(pool, email).await? else {
             return Ok(None);
         };
@@ -76,6 +82,10 @@ impl Service {
             Utc::now() + Duration::minutes(PASSWORD_RESET_MINUTES),
         )
         .await?;
+
+        email_service
+            .send_password_reset_email(email, app_url, &token)
+            .await?;
 
         Ok(Some(token))
     }
