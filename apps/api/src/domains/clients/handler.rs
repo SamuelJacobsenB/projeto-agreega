@@ -11,6 +11,7 @@ use crate::{
         service::Service,
     },
     response::{ApiResponse, ApiResult, ValidatedJson},
+    security::auth_user::AuthUser,
 };
 
 pub struct Handler;
@@ -34,6 +35,18 @@ impl Handler {
         Path(id): Path<Uuid>,
     ) -> ApiResult<ClientResponseDto> {
         let client = Service::get_client_by_id(&state.pool, id).await?;
+
+        Ok((
+            StatusCode::OK,
+            ApiResponse::success("Cliente encontrado.", Some(ClientResponseDto::from(client))),
+        ))
+    }
+
+    pub async fn get_my_client(
+        State(state): State<AppState>,
+        AuthUser { id: user_id, .. }: AuthUser,
+    ) -> ApiResult<ClientResponseDto> {
+        let client = Service::get_my_client(&state.pool, user_id).await?;
 
         Ok((
             StatusCode::OK,

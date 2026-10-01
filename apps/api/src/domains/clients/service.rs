@@ -23,6 +23,12 @@ impl Service {
             .ok_or_else(|| AppError::NotFound("Cliente não encontrado.".to_string()))
     }
 
+    pub async fn get_my_client(pool: &PgPool, user_id: Uuid) -> AppResult<Client> {
+        Repository::find_client_by_user_id(pool, user_id)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Cliente não encontrado.".to_string()))
+    }
+
     pub async fn create_client(pool: &PgPool, dto: &CreateClientRequestDto) -> AppResult<Client> {
         if let Some(cnpj) = &dto.cnpj {
             if Repository::exists_by_cnpj(pool, cnpj, None).await? {

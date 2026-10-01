@@ -92,6 +92,22 @@ impl Repository {
         .map_err(|_| AppError::Database("Falha ao buscar cliente nos dados.".to_string()))
     }
 
+    pub async fn find_client_by_user_id(pool: &PgPool, user_id: Uuid) -> AppResult<Option<Client>> {
+        sqlx::query_as!(
+            Client,
+            r#"
+            SELECT c.*
+            FROM users u
+            JOIN clients c ON c.id = u.client_id
+            WHERE u.id = $1
+        "#,
+            user_id
+        )
+        .fetch_optional(pool)
+        .await
+        .map_err(|_| AppError::Database("Falha ao buscar cliente do usuário.".to_string()))
+    }
+
     pub async fn create(pool: &PgPool, dto: &CreateClientRequestDto) -> AppResult<Client> {
         sqlx::query_as!(
             Client,

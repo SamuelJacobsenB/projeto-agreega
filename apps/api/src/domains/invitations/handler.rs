@@ -7,7 +7,6 @@ use uuid::Uuid;
 use crate::{
     app::AppState,
     domains::invitations::{
-        self,
         dtos::{
             AcceptInvitationRequestDto, CreateInvitationRequestDto, CreatedInvitationResponseDto,
             InvitationResponseDto,
@@ -15,6 +14,7 @@ use crate::{
         service::Service,
     },
     response::{ApiResponse, ApiResult, ValidatedJson},
+    security::auth_user::AuthUser,
 };
 
 pub struct Handler;
@@ -38,11 +38,9 @@ impl Handler {
 
     pub async fn create_invitation(
         State(state): State<AppState>,
+        AuthUser { id: invited_by, .. }: AuthUser,
         ValidatedJson(dto): ValidatedJson<CreateInvitationRequestDto>,
     ) -> ApiResult<CreatedInvitationResponseDto> {
-        // LEMBRAR DE PEGAR O USUÁRIO CORRETO DEPOIS DE IMPLEMENTAR AUTH
-        let invited_by = Uuid::new_v4();
-
         let (invitation, token) = Service::create_invitation(&state.pool, &dto, invited_by).await?;
 
         let response = CreatedInvitationResponseDto {
