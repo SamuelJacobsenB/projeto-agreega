@@ -5,24 +5,6 @@ use validator::Validate;
 
 use super::models::UserRole;
 
-#[derive(Deserialize, Validate)]
-pub struct CreateUserRequestDto {
-    #[validate(custom(function = "crate::validation::validate_not_blank"))]
-    pub name: String,
-
-    #[validate(email(message = "E-mail inválido."))]
-    pub email: String,
-
-    #[validate(custom(function = "crate::validation::validate_brazilian_phone"))]
-    pub phone: Option<String>,
-
-    #[validate(custom(function = "crate::validation::validate_cpf"))]
-    pub cpf: Option<String>,
-
-    #[validate(custom(function = "crate::validation::validate_password"))]
-    pub password: String,
-}
-
 #[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateUserRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_blank"))]

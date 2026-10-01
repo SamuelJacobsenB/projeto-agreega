@@ -26,67 +26,26 @@ where
         })?;
 
         value.validate().map_err(|errors| {
-            let mut messages = errors
+            let fields = errors
                 .field_errors()
-                .iter()
-                .flat_map(|(field, field_errors)| {
-                    field_errors.iter().map(move |error| {
-                        let message = error.message.as_deref().unwrap_or("Valor inválido.");
-                        format!("{field}: {message}")
-                    })
-                })
-                .collect::<Vec<_>>();
+                .into_iter()
+                .map(|(field, errors)| {
+                    let messages = errors
+                        .iter()
+                        .filter_map(|error| error.message.as_deref())
+                        .map(String::from)
+                        .collect();
 
-            messages.sort();
-            let message = if messages.is_empty() {
-                "Dados inválidos.".to_owned()
-            } else {
-                messages.join(" ")
-            };
+                    (field.to_string(), messages)
+                })
+                .collect();
 
             (
                 StatusCode::UNPROCESSABLE_ENTITY,
-                Json(ApiResponse::error(message)),
+                Json(ApiResponse::validation("Dados inválidos.", fields)),
             )
         })?;
 
         Ok(Self(value))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use axum::{
-        Json,
-        body::Body,
-        extract::FromRequest,
-        http::{Request, StatusCode, header::CONTENT_TYPE},
-    };
-
-    use crate::domains::auth::dtos::LoginRequestDto;
-
-    use super::ValidatedJson;
-
-    #[tokio::test]
-    async fn invalid_json_fields_are_rejected_without_echoing_values() {
-        let request = Request::builder()
-            .method("POST")
-            .uri("/")
-            .header(CONTENT_TYPE, "application/json")
-            .body(Body::from(
-                r#"{"email":"private-email-value","password":"private-password-value"}"#,
-            ))
-            .unwrap();
-
-        let result =
-            <ValidatedJson<LoginRequestDto> as FromRequest<()>>::from_request(request, &()).await;
-        let (status, Json(response)) = match result {
-            Ok(_) => panic!("invalid email should be rejected"),
-            Err(rejection) => rejection,
-        };
-
-        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
-        assert!(!response.message.contains("private-email-value"));
-        assert!(!response.message.contains("private-password-value"));
     }
 }

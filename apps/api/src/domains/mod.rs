@@ -6,6 +6,7 @@ pub mod document_comments;
 pub mod document_versions;
 pub mod documents;
 pub mod files;
+pub mod invitations;
 pub mod message_attachments;
 pub mod messages;
 pub mod notifications;

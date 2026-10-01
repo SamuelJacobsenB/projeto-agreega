@@ -25,7 +25,7 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(sqlx::Type, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
 #[serde(rename_all = "snake_case")]
 pub enum UserRole {

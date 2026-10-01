@@ -159,7 +159,7 @@ impl Repository {
         )
         .execute(pool)
         .await
-        .map_err(|_| AppError::Database("Falha ao deletar cliente nos dados.".to_string()))?;
+        .map_err(|_| AppError::Database("Falha ao deletar cliente dos dados.".to_string()))?;
 
         if result.rows_affected() == 0 {
             return Err(AppError::NotFound("Cliente não encontrado.".to_string()));
