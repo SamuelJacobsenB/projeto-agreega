@@ -11,6 +11,9 @@ use crate::{
     domains::invitations::routes::{
         public_routes as invitations_public_routes, staff_routes as invitations_staff_routes,
     },
+    domains::users::routes::{
+        authenticated_routes as users_authenticated_routes, staff_routes as users_staff_routes,
+    },
     middlewares::auth::{require_admin, require_auth, require_staff},
 };
 
@@ -22,11 +25,13 @@ pub fn create_router(state: AppState) -> Router {
     let authenticated_routes = Router::new()
         .nest("/auth", auth_authenticated_routes())
         .nest("/clients", clients_authenticated_routes())
+        .nest("/users", users_authenticated_routes())
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 
     let staff = Router::new()
         .nest("/clients", clients_staff_routes())
         .nest("/invitations", invitations_staff_routes())
+        .nest("/users", users_staff_routes())
         .layer(middleware::from_fn(require_staff))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 

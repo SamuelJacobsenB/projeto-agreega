@@ -10,9 +10,6 @@ pub struct UpdateUserRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: Option<String>,
 
-    #[validate(email(message = "E-mail inválido."))]
-    pub email: Option<String>,
-
     #[validate(custom(function = "crate::validation::validate_brazilian_phone"))]
     pub phone: Option<String>,
 
@@ -20,7 +17,7 @@ pub struct UpdateUserRequestDto {
     pub cpf: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct UserResponseDto {
     pub id: Uuid,
     pub name: String,
