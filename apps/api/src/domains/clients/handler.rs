@@ -17,10 +17,8 @@ use crate::{
 pub struct Handler;
 
 impl Handler {
-    pub async fn get_all_clients(
-        State(state): State<AppState>,
-    ) -> ApiResult<Vec<ClientResponseDto>> {
-        let clients = Service::get_all_clients(&state.pool).await?;
+    pub async fn list_clients(State(state): State<AppState>) -> ApiResult<Vec<ClientResponseDto>> {
+        let clients = Service::list_clients(&state.pool).await?;
 
         let client_dtos = clients.into_iter().map(ClientResponseDto::from).collect();
 

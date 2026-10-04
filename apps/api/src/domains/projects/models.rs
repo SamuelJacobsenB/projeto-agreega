@@ -5,6 +5,7 @@ use uuid::Uuid;
 /// Representa um projeto administrado pela Agreega.
 /// Conecta-se a Client, Stage, Document, Message, Photo e Payment.
 /// Usado como entidade central do portal para acompanhar e gerenciar cada projeto.
+#[derive(sqlx::FromRow)]
 pub struct Project {
     pub id: Uuid,
 

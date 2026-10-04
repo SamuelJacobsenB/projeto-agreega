@@ -13,6 +13,7 @@ dependencies = [
  "dotenvy",
  "getrandom 0.4.3",
  "hex",
+ "infer",
  "jsonwebtoken",
  "resend-rs",
  "rust_decimal",
@@ -266,6 +267,17 @@ checksum = "54413ede23c2daf518f35156dfde027feb2374004d63bd497f983c8db9c0e313"
 dependencies = [
  "find-msvc-tools",
  "shlex",
+]
+
+[[package]]
+name = "cfb"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a347dcabdae9c31b0825fd6a8bed285ec9c2acb89c47827126d52fa4f59cece3"
+dependencies = [
+ "fnv",
+ "uuid",
+ "web-time",
 ]
 
 [[package]]
@@ -1167,6 +1179,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "infer"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4200d433cbd5178df7797c9c2e75b348b728e39631cf14520d1e2fc424201f4"
+dependencies = [
+ "cfb",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1787,9 +1808,9 @@ dependencies = [
 
 [[package]]
 name = "resend-rs"
-version = "0.33.0"
+version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12a6cea13951ce796799ec1c6d7d0fea35185900d98435a762ae263e5c389b57"
+checksum = "9bf2e13eb4e42005789b633a6a008add0f8f4d5521e0482d8836398c8be9a3c1"
 dependencies = [
  "ecow",
  "getrandom 0.4.3",

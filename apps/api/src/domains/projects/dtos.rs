@@ -44,7 +44,7 @@ pub struct UpdateProjectRequestDto {
     pub cover_file_id: Option<Uuid>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize)]
 pub struct ProjectResponseDto {
     pub id: Uuid,
     pub client_id: Uuid,

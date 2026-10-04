@@ -13,7 +13,7 @@ use crate::{
 pub struct Service;
 
 impl Service {
-    pub async fn get_all_clients(pool: &PgPool) -> AppResult<Vec<Client>> {
+    pub async fn list_clients(pool: &PgPool) -> AppResult<Vec<Client>> {
         Repository::find_all(pool).await
     }
 

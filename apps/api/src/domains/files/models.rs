@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[derive(sqlx::FromRow)]
 pub struct File {
     pub id: Uuid,
 

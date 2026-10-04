@@ -33,4 +33,6 @@ getrandom = "0.4"
 
 axum-extra = { version = "0.12.6", features = ["cookie"] }
 
-resend-rs = "0.33"
+resend-rs = "0.34"
+
+infer = "0.22"
