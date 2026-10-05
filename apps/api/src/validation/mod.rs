@@ -15,45 +15,19 @@ pub fn validate_not_blank(value: &str) -> Result<(), ValidationError> {
 }
 
 pub fn validate_password(value: &str) -> Result<(), ValidationError> {
-    if value.chars().count() < 8 {
+    let normalized = value.trim();
+
+    if normalized.chars().count() < 8 {
         return Err(validation_error(
             "weak_password",
             "A senha deve ter pelo menos 8 caracteres.",
         ));
     }
 
-    if value.chars().count() > 15 {
+    if normalized.chars().count() > 15 {
         return Err(validation_error(
             "weak_password",
             "A senha deve ter no máximo 15 caracteres.",
-        ));
-    }
-
-    if !value.chars().any(|c| c.is_uppercase()) {
-        return Err(validation_error(
-            "weak_password",
-            "A senha deve conter pelo menos uma letra maiúscula.",
-        ));
-    }
-
-    if !value.chars().any(|c| c.is_lowercase()) {
-        return Err(validation_error(
-            "weak_password",
-            "A senha deve conter pelo menos uma letra minúscula.",
-        ));
-    }
-
-    if !value.chars().any(|c| c.is_ascii_digit()) {
-        return Err(validation_error(
-            "weak_password",
-            "A senha deve conter pelo menos um número.",
-        ));
-    }
-
-    if !value.chars().any(|c| !c.is_alphanumeric()) {
-        return Err(validation_error(
-            "weak_password",
-            "A senha deve conter pelo menos um caractere especial.",
         ));
     }
 

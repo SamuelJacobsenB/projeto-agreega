@@ -13,6 +13,10 @@ use crate::{
         invitations::routes::{
             public_routes as invitations_public_routes, staff_routes as invitations_staff_routes,
         },
+        project_images::routes::{
+            public_routes as project_images_public_routes,
+            staff_routes as project_images_staff_routes,
+        },
         projects::routes::{
             authenticated_routes as projects_authenticated_routes,
             staff_routes as projects_staff_routes,
@@ -27,7 +31,8 @@ use crate::{
 pub fn create_router(state: AppState) -> Router {
     let public = Router::new()
         .nest("/auth", auth_public_routes())
-        .nest("/invitations", invitations_public_routes());
+        .nest("/invitations", invitations_public_routes())
+        .nest("/project-images", project_images_public_routes());
 
     let authenticated_routes = Router::new()
         .nest("/auth", auth_authenticated_routes())
@@ -39,6 +44,7 @@ pub fn create_router(state: AppState) -> Router {
     let staff = Router::new()
         .nest("/clients", clients_staff_routes())
         .nest("/invitations", invitations_staff_routes())
+        .nest("/project-images", project_images_staff_routes())
         .nest("/projects", projects_staff_routes())
         .nest("/users", users_staff_routes())
         .layer(middleware::from_fn(require_staff))

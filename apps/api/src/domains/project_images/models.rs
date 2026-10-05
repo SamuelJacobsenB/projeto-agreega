@@ -4,6 +4,7 @@ use uuid::Uuid;
 /// Representa as imagens ilustrativas do projeto.
 /// Conecta-se a Project, e a imagem de order = 0 é utilizada como capa
 /// Usado como visualização geral do projeto
+#[derive(sqlx::FromRow)]
 pub struct ProjectImage {
     pub id: Uuid,
 
