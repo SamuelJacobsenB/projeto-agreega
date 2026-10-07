@@ -21,6 +21,10 @@ use crate::{
             authenticated_routes as projects_authenticated_routes,
             staff_routes as projects_staff_routes,
         },
+        stages::routes::{
+            authenticated_routes as stages_authenticated_routes,
+            staff_routes as stages_staff_routes,
+        },
         users::routes::{
             authenticated_routes as users_authenticated_routes, staff_routes as users_staff_routes,
         },
@@ -39,6 +43,7 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/clients", clients_authenticated_routes())
         .nest("/projects", projects_authenticated_routes())
         .nest("/users", users_authenticated_routes())
+        .nest("/stages", stages_authenticated_routes())
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 
     let staff = Router::new()
@@ -47,6 +52,7 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/project-images", project_images_staff_routes())
         .nest("/projects", projects_staff_routes())
         .nest("/users", users_staff_routes())
+        .nest("/stages", stages_staff_routes())
         .layer(middleware::from_fn(require_staff))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 

@@ -6,6 +6,7 @@ use uuid::Uuid;
 /// Representa uma etapa dentro de um projeto.
 /// Conecta-se a Project e Task.
 /// Usado para organizar o projeto em fases e calcular seu progresso.
+#[derive(sqlx::FromRow)]
 pub struct Stage {
     pub id: Uuid,
 

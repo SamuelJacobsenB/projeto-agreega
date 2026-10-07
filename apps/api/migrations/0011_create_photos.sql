@@ -4,7 +4,7 @@ CREATE TABLE photos (
     stage_id UUID NOT NULL,
     task_id UUID,
     file_id UUID NOT NULL,
-    description TEXT,
+    description VARCHAR(255),
     uploaded_by UUID NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_photos_project FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,

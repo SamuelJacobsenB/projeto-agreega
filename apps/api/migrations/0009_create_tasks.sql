@@ -2,7 +2,7 @@ CREATE TABLE tasks (
     id UUID PRIMARY KEY,
     stage_id UUID NOT NULL,
     title VARCHAR(200) NOT NULL,
-    description TEXT,
+    description VARCHAR(1000),
     weight DECIMAL(10, 4) NOT NULL DEFAULT 1,
     progress DECIMAL(5, 4) NOT NULL DEFAULT 0,
     "order" SMALLINT NOT NULL,

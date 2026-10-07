@@ -2,7 +2,7 @@ CREATE TABLE stages (
     id UUID PRIMARY KEY,
     project_id UUID NOT NULL,
     name VARCHAR(150) NOT NULL,
-    description TEXT,
+    description VARCHAR(1000),
     weight DECIMAL (10, 4) NOT NULL DEFAULT 1,
     "order" SMALLINT NOT NULL,
     status STAGE_STATUS NOT NULL DEFAULT 'pending',

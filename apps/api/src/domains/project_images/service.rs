@@ -62,13 +62,7 @@ impl Service {
         )
         .await?;
 
-        let images = Repository::find_by_project_id(pool, dto.project_id).await?;
-
-        let order = i16::try_from(images.len()).map_err(|_| {
-            AppError::BadRequest("Quantidade de imagens excede o limite permitido.".to_string())
-        })?;
-
-        Repository::create(pool, dto, file.id, order).await
+        Repository::create(pool, dto, file.id).await
     }
 
     pub async fn reorder_project_images(
@@ -95,11 +89,14 @@ impl Service {
             ));
         }
 
-        Ok(())
+        Repository::reorder(pool, project_id, dto).await
     }
 
     pub async fn delete_project_image(pool: &PgPool, id: Uuid) -> AppResult<()> {
         let image = Self::get_project_image_by_id(pool, id).await?;
+
+        FileService::delete_file(pool, image.file_id).await?;
+
         Repository::delete(pool, id, image.project_id, image.order).await
     }
 

@@ -5,7 +5,7 @@ CREATE TABLE document_approvals (
     requested_by UUID NOT NULL,
     reviewed_by UUID,
     status APPROVAL_STATUS NOT NULL DEFAULT 'pending',
-    comment TEXT,
+    comment VARCHAR(500),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     reviewed_at TIMESTAMPTZ,
     CONSTRAINT fk_document_approvals_document FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,

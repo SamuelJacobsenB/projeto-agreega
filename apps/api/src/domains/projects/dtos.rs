@@ -12,15 +12,17 @@ pub struct CreateProjectRequestDto {
 
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: String,
+    #[validate(length(max = 4000, message = "Descrição não pode exceder 4000 caracteres."))]
     pub description: Option<String>,
     pub project_type: ProjectType,
     pub status: ProjectStatus,
+
     pub address: Option<String>,
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub city: String,
-
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub state: String,
+
     pub start_date: Option<NaiveDate>,
     pub estimated_end_date: Option<NaiveDate>,
     pub cover_file_id: Option<Uuid>,
@@ -30,15 +32,17 @@ pub struct CreateProjectRequestDto {
 pub struct UpdateProjectRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: Option<String>,
+    #[validate(length(max = 4000, message = "Descrição não pode exceder 4000 caracteres."))]
     pub description: Option<String>,
     pub project_type: Option<ProjectType>,
     pub status: Option<ProjectStatus>,
+
     pub address: Option<String>,
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub city: Option<String>,
-
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub state: Option<String>,
+
     pub start_date: Option<NaiveDate>,
     pub estimated_end_date: Option<NaiveDate>,
     pub cover_file_id: Option<Uuid>,

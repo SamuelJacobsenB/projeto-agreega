@@ -2,7 +2,7 @@ CREATE TABLE document_comments (
     id UUID PRIMARY KEY,
     document_id UUID NOT NULL,
     user_id UUID NOT NULL,
-    content TEXT NOT NULL,
+    content VARCHAR(500) NOT NULL,
     page INTEGER,
     position_x REAL,
     position_y REAL,

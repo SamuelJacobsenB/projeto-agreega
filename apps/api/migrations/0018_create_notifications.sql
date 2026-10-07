@@ -2,7 +2,7 @@ CREATE TABLE notifications (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
     title VARCHAR(100) NOT NULL,
-    message TEXT NOT NULL,
+    message VARCHAR(2000) NOT NULL,
     notification_type NOTIFICATION_TYPE NOT NULL,
     read_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

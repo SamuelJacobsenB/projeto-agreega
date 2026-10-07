@@ -6,6 +6,7 @@ use crate::{
         dtos::{CreateProjectImageRequestDto, ReorderProjectImagesRequestDto},
         models::ProjectImage,
     },
+    infrastructure::db::ordering::{self, OrderingTable},
     response::{AppError, AppResult},
 };
 
@@ -68,9 +69,19 @@ impl Repository {
         pool: &PgPool,
         dto: &CreateProjectImageRequestDto,
         file_id: Uuid,
-        order: i16,
     ) -> AppResult<ProjectImage> {
-        sqlx::query_as::<_, ProjectImage>(
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar criação de imagem do projeto".to_string())
+        })?;
+
+        let order = ordering::next_order(
+            &mut transaction,
+            OrderingTable::ProjectImages,
+            dto.project_id,
+        )
+        .await?;
+
+        let image = sqlx::query_as::<_, ProjectImage>(
             r#"
                 INSERT INTO project_images (
                     id,
@@ -86,34 +97,35 @@ impl Repository {
         .bind(dto.project_id)
         .bind(file_id)
         .bind(order)
-        .fetch_one(pool)
+        .fetch_one(&mut *transaction)
         .await
-        .map_err(|_| AppError::Database("Falha ao criar imagem do projeto nos dados.".to_string()))
+        .map_err(|_| {
+            AppError::Database("Falha ao criar imagem do projeto nos dados.".to_string())
+        })?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao concluir criação da imagem do projeto.".to_string())
+        })?;
+
+        Ok(image)
     }
 
-    pub async fn reorder(pool: &PgPool, dto: &ReorderProjectImagesRequestDto) -> AppResult<()> {
+    pub async fn reorder(
+        pool: &PgPool,
+        project_id: Uuid,
+        dto: &ReorderProjectImagesRequestDto,
+    ) -> AppResult<()> {
         let mut transaction = pool.begin().await.map_err(|_| {
             AppError::Database("Falha ao iniciar reordenação das imagens do projeto".to_string())
         })?;
 
-        for (order, image_id) in dto.images.iter().enumerate() {
-            let order = i16::try_from(order).map_err(|_| {
-                AppError::BadRequest("Quantidade de imagens excede o limite permitido.".to_string())
-            })?;
-
-            sqlx::query(
-                r#"
-                    UPDATE project_images
-                    SET "order" = $1
-                    WHERE id = $2
-                "#,
-            )
-            .bind(order)
-            .bind(image_id)
-            .execute(&mut *transaction)
-            .await
-            .map_err(|_| AppError::Database("Falha ao reordenar imagens.".to_string()))?;
-        }
+        ordering::reorder(
+            &mut transaction,
+            OrderingTable::ProjectImages,
+            project_id,
+            &dto.images,
+        )
+        .await?;
 
         transaction.commit().await.map_err(|_| {
             AppError::Database("Falha ao concluir reordenação das imagens".to_string())
@@ -122,16 +134,18 @@ impl Repository {
 
     pub async fn delete(pool: &PgPool, id: Uuid, project_id: Uuid, order: i16) -> AppResult<()> {
         let mut transaction = pool.begin().await.map_err(|_| {
-            AppError::Database("Falha ao iniciar deleção de imagem do projeto".to_string())
+            AppError::Database("Falha ao iniciar deleção da imagem do projeto.".to_string())
         })?;
 
         let result = sqlx::query(
             r#"
                 DELETE FROM project_images
                 WHERE id = $1
+                  AND project_id = $2
             "#,
         )
         .bind(id)
+        .bind(project_id)
         .execute(&mut *transaction)
         .await
         .map_err(|_| {
@@ -144,22 +158,18 @@ impl Repository {
             ));
         }
 
-        sqlx::query(
-            r#"
-                UPDATE project_images
-                SET "order" = "order" - 1
-                WHERE project_id = $1
-                AND "order" > $2
-            "#,
+        ordering::shift_after_delete(
+            &mut transaction,
+            OrderingTable::ProjectImages,
+            project_id,
+            order,
         )
-        .bind(project_id)
-        .bind(order)
-        .execute(&mut *transaction)
-        .await
-        .map_err(|_| AppError::Database("Falha ao reordenar as imagens do projeto.".to_string()))?;
+        .await?;
 
         transaction.commit().await.map_err(|_| {
-            AppError::Database("Falha ao concluir reordenação das imagens".to_string())
-        })
+            AppError::Database("Falha ao concluir deleção da imagem do projeto.".to_string())
+        })?;
+
+        Ok(())
     }
 }
