@@ -7,6 +7,7 @@ use crate::response::{AppError, AppResult};
 pub enum OrderingTable {
     ProjectImages,
     Stages,
+    Tasks,
 }
 
 impl OrderingTable {
@@ -24,6 +25,13 @@ impl OrderingTable {
                     SELECT COALESCE(MAX("order") + 1, 0)
                     FROM stages
                     WHERE project_id = $1
+                "#
+            }
+            Self::Tasks => {
+                r#"
+                    SELECT COALESCE(MAX("order") + 1, 0)
+                    FROM tasks
+                    WHERE stage_id = $1
                 "#
             }
         }
@@ -47,23 +55,12 @@ impl OrderingTable {
                       AND "order" > $2
                 "#
             }
-        }
-    }
-
-    fn prepare_reorder_query(self) -> &'static str {
-        match self {
-            Self::ProjectImages => {
+            Self::Tasks => {
                 r#"
-                    UPDATE project_images
-                    SET "order" = -"order" - 1
-                    WHERE project_id = $1
-                "#
-            }
-            Self::Stages => {
-                r#"
-                    UPDATE stages
-                    SET "order" = -"order" - 1
-                    WHERE project_id = $1
+                    UPDATE tasks
+                    SET "order" = "order" - 1
+                    WHERE stage_id = $1
+                      AND "order" > $2
                 "#
             }
         }
@@ -85,6 +82,14 @@ impl OrderingTable {
                     SET "order" = $1
                     WHERE id = $2
                       AND project_id = $3
+                "#
+            }
+            Self::Tasks => {
+                r#"
+                    UPDATE tasks
+                    SET "order" = $1
+                    WHERE id = $2
+                      AND stage_id = $3
                 "#
             }
         }
@@ -129,14 +134,6 @@ pub async fn reorder(
     parent_id: Uuid,
     ids: &[Uuid],
 ) -> AppResult<()> {
-    sqlx::query(ordering.prepare_reorder_query())
-        .bind(parent_id)
-        .execute(&mut **tx)
-        .await
-        .map_err(|_| {
-            AppError::Database("Falha ao preparar a reordenação dos registros.".to_string())
-        })?;
-
     let query = ordering.reorder_query();
 
     for (order, id) in ids.iter().enumerate() {
@@ -144,7 +141,7 @@ pub async fn reorder(
             AppError::BadRequest("Quantidade de registros excede o limite permitido.".to_string())
         })?;
 
-        sqlx::query(query)
+        let result = sqlx::query(query)
             .bind(order)
             .bind(id)
             .bind(parent_id)
@@ -153,6 +150,12 @@ pub async fn reorder(
             .map_err(|_| {
                 AppError::Database("Falha ao aplicar a nova ordenação dos registros.".to_string())
             })?;
+
+        if result.rows_affected() != 1 {
+            return Err(AppError::NotFound(
+                "Registro não encontrado para reordenação.".to_string(),
+            ));
+        }
     }
 
     Ok(())

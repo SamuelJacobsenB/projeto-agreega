@@ -6,6 +6,7 @@ use uuid::Uuid;
 /// Representa uma tarefa pertencente a uma etapa.
 /// Conecta-se a Stage e User.
 /// Usado para controlar atividades, responsáveis, prazos e progresso das etapas.
+#[derive(sqlx::FromRow)]
 pub struct Task {
     pub id: Uuid,
 

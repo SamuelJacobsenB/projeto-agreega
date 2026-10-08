@@ -13,14 +13,15 @@ pub struct CreateTaskRequestDto {
 
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub title: String,
+    #[validate(length(max = 1000, message = "Descrição não pode exceder 1000 caracteres."))]
     pub description: Option<String>,
+
     #[validate(custom(function = "crate::validation::validate_positive_decimal"))]
     pub weight: Decimal,
-
     #[validate(custom(function = "crate::validation::validate_percentage"))]
     pub progress: Decimal,
-    pub order: i16,
     pub status: TaskStatus,
+
     pub assigned_to: Option<Uuid>,
     pub due_date: Option<NaiveDate>,
 }
@@ -29,20 +30,29 @@ pub struct CreateTaskRequestDto {
 pub struct UpdateTaskRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub title: Option<String>,
+    #[validate(length(max = 1000, message = "Descrição não pode exceder 1000 caracteres."))]
     pub description: Option<String>,
 
     #[validate(custom(function = "crate::validation::validate_positive_decimal"))]
     pub weight: Option<Decimal>,
-
     #[validate(custom(function = "crate::validation::validate_percentage"))]
     pub progress: Option<Decimal>,
-    pub order: Option<i16>,
     pub status: Option<TaskStatus>,
+
     pub assigned_to: Option<Uuid>,
     pub due_date: Option<NaiveDate>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Validate)]
+pub struct ReorderTasksRequestDto {
+    #[validate(length(
+        min = 1,
+        message = "Para reordenar as tarefas do projeto todas as tarefas devem ser listadas."
+    ))]
+    pub tasks: Vec<Uuid>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct TaskResponseDto {
     pub id: Uuid,
     pub stage_id: Uuid,
