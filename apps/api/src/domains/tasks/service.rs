@@ -11,6 +11,7 @@ use crate::{
             models::Task,
             repository::Repository,
         },
+        users::models::UserRole,
     },
     response::{AppError, AppResult},
 };
@@ -18,19 +19,36 @@ use crate::{
 pub struct Service;
 
 impl Service {
-    pub async fn list_stage_tasks(pool: &PgPool, stage_id: Uuid) -> AppResult<Vec<Task>> {
-        StageService::get_stage_by_id(pool, stage_id).await?;
+    pub async fn list_stage_tasks(
+        pool: &PgPool,
+        stage_id: Uuid,
+        user_id: Uuid,
+        role: UserRole,
+    ) -> AppResult<Vec<Task>> {
+        StageService::get_stage_by_id(pool, stage_id, user_id, role).await?;
         Repository::find_by_stage_id(pool, stage_id).await
     }
 
-    pub async fn get_task_by_id(pool: &PgPool, id: Uuid) -> AppResult<Task> {
-        Repository::find_by_id(pool, id)
+    pub async fn get_task_by_id(
+        pool: &PgPool,
+        id: Uuid,
+        user_id: Uuid,
+        role: UserRole,
+    ) -> AppResult<Task> {
+        let task = Repository::find_by_id(pool, id)
             .await?
-            .ok_or_else(|| AppError::NotFound("Tarefa não encontrada.".to_string()))
+            .ok_or_else(|| AppError::NotFound("Tarefa não encontrada.".to_string()))?;
+        StageService::get_stage_by_id(pool, task.stage_id, user_id, role).await?;
+        Ok(task)
     }
 
-    pub async fn create_task(pool: &PgPool, dto: &CreateTaskRequestDto) -> AppResult<Task> {
-        StageService::get_stage_by_id(pool, dto.stage_id).await?;
+    pub async fn create_task(
+        pool: &PgPool,
+        dto: &CreateTaskRequestDto,
+        user_id: Uuid,
+        role: UserRole,
+    ) -> AppResult<Task> {
+        StageService::get_stage_by_id(pool, dto.stage_id, user_id, role).await?;
         Repository::create(pool, dto).await
     }
 
@@ -38,8 +56,10 @@ impl Service {
         pool: &PgPool,
         stage_id: Uuid,
         dto: &ReorderTasksRequestDto,
+        user_id: Uuid,
+        role: UserRole,
     ) -> AppResult<()> {
-        let current_tasks = Self::list_stage_tasks(pool, stage_id).await?;
+        let current_tasks = Self::list_stage_tasks(pool, stage_id, user_id, role).await?;
 
         if current_tasks.len() != dto.tasks.len() {
             return Err(AppError::BadRequest(
@@ -62,7 +82,9 @@ impl Service {
     }
 
     pub async fn delete_task(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        let task = Self::get_task_by_id(pool, id).await?;
+        let task = Repository::find_by_id(pool, id)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Tarefa não encontrada.".to_string()))?;
         Repository::delete(pool, id, task.stage_id, task.order).await
     }
 }

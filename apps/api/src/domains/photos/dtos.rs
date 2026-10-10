@@ -14,26 +14,17 @@ pub struct CreatePhotoRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub task_id: Option<Uuid>,
 
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub file_id: Uuid,
+    #[validate(length(max = 255, message = "Descrição não pode exceder 255 caracteres."))]
     pub description: Option<String>,
-
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub uploaded_by: Uuid,
 }
 
 #[derive(Deserialize, Serialize, Validate)]
-pub struct UpdatePhotoRequestDto {
-    pub description: Option<String>,
-
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub stage_id: Option<Uuid>,
-
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub task_id: Option<Uuid>,
+pub struct UpdatePhotoDescriptionRequestDto {
+    #[validate(length(max = 255, message = "Descrição não pode exceder 255 caracteres."))]
+    pub description: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PhotoResponseDto {
     pub id: Uuid,
     pub project_id: Uuid,
@@ -41,6 +32,7 @@ pub struct PhotoResponseDto {
     pub task_id: Option<Uuid>,
     pub file_id: Uuid,
     pub description: Option<String>,
+    pub url: String,
     pub uploaded_by: Uuid,
     pub created_at: DateTime<Utc>,
 }

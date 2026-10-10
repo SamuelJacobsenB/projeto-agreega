@@ -11,6 +11,7 @@ use crate::{
         service::Service,
     },
     response::{ApiResponse, ApiResult, ValidatedJson},
+    security::auth_user::AuthUser,
 };
 
 pub struct Handler;
@@ -18,9 +19,10 @@ pub struct Handler;
 impl Handler {
     pub async fn list_stage_tasks(
         State(state): State<AppState>,
+        AuthUser { id: user_id, role }: AuthUser,
         Path(stage_id): Path<Uuid>,
     ) -> ApiResult<Vec<TaskResponseDto>> {
-        let tasks = Service::list_stage_tasks(&state.pool, stage_id).await?;
+        let tasks = Service::list_stage_tasks(&state.pool, stage_id, user_id, role).await?;
 
         let task_dtos = tasks.into_iter().map(TaskResponseDto::from).collect();
 
@@ -32,9 +34,10 @@ impl Handler {
 
     pub async fn get_task_by_id(
         State(state): State<AppState>,
+        AuthUser { id: user_id, role }: AuthUser,
         Path(id): Path<Uuid>,
     ) -> ApiResult<TaskResponseDto> {
-        let task = Service::get_task_by_id(&state.pool, id).await?;
+        let task = Service::get_task_by_id(&state.pool, id, user_id, role).await?;
 
         Ok((
             StatusCode::OK,
@@ -47,9 +50,10 @@ impl Handler {
 
     pub async fn create_task(
         State(state): State<AppState>,
+        AuthUser { id: user_id, role }: AuthUser,
         ValidatedJson(dto): ValidatedJson<CreateTaskRequestDto>,
     ) -> ApiResult<TaskResponseDto> {
-        let task = Service::create_task(&state.pool, &dto).await?;
+        let task = Service::create_task(&state.pool, &dto, user_id, role).await?;
 
         Ok((
             StatusCode::CREATED,
@@ -62,10 +66,11 @@ impl Handler {
 
     pub async fn reorder_tasks(
         State(state): State<AppState>,
+        AuthUser { id: user_id, role }: AuthUser,
         Path(stage_id): Path<Uuid>,
         ValidatedJson(dto): ValidatedJson<ReorderTasksRequestDto>,
     ) -> ApiResult<()> {
-        Service::reorder_tasks(&state.pool, stage_id, &dto).await?;
+        Service::reorder_tasks(&state.pool, stage_id, &dto, user_id, role).await?;
 
         Ok((
             StatusCode::OK,

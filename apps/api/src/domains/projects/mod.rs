@@ -1,3 +1,4 @@
+pub mod authorization;
 pub mod dtos;
 pub mod handler;
 pub mod mapper;

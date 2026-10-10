@@ -5,12 +5,13 @@ use uuid::Uuid;
 
 use crate::{
     domains::{
-        projects::service::Service as ProjectService,
+        projects::{authorization::authorize_project_access, service::Service as ProjectService},
         stages::{
             dtos::{CreateStageRequestDto, ReorderStagesRequestDto},
             models::Stage,
             repository::Repository,
         },
+        users::models::UserRole,
     },
     response::{AppError, AppResult},
 };
@@ -18,15 +19,28 @@ use crate::{
 pub struct Service;
 
 impl Service {
-    pub async fn list_project_stages(pool: &PgPool, project_id: Uuid) -> AppResult<Vec<Stage>> {
+    pub async fn list_project_stages(
+        pool: &PgPool,
+        project_id: Uuid,
+        user_id: Uuid,
+        role: UserRole,
+    ) -> AppResult<Vec<Stage>> {
         ProjectService::get_project_by_id(pool, project_id).await?;
+        authorize_project_access(pool, project_id, user_id, role).await?;
         Repository::find_by_project_id(pool, project_id).await
     }
 
-    pub async fn get_stage_by_id(pool: &PgPool, id: Uuid) -> AppResult<Stage> {
-        Repository::find_by_id(pool, id)
+    pub async fn get_stage_by_id(
+        pool: &PgPool,
+        id: Uuid,
+        user_id: Uuid,
+        role: UserRole,
+    ) -> AppResult<Stage> {
+        let stage = Repository::find_by_id(pool, id)
             .await?
-            .ok_or_else(|| AppError::NotFound("Estágio não encontrado.".to_string()))
+            .ok_or_else(|| AppError::NotFound("Estágio não encontrado.".to_string()))?;
+        authorize_project_access(pool, stage.project_id, user_id, role).await?;
+        Ok(stage)
     }
 
     pub async fn create_stage(pool: &PgPool, dto: &CreateStageRequestDto) -> AppResult<Stage> {
@@ -39,7 +53,7 @@ impl Service {
         project_id: Uuid,
         dto: &ReorderStagesRequestDto,
     ) -> AppResult<()> {
-        let current_stages = Self::list_project_stages(pool, project_id).await?;
+        let current_stages = Repository::find_by_project_id(pool, project_id).await?;
 
         if current_stages.len() != dto.stages.len() {
             return Err(AppError::BadRequest(
@@ -62,7 +76,9 @@ impl Service {
     }
 
     pub async fn delete_stage(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        let stage = Self::get_stage_by_id(pool, id).await?;
+        let stage = Repository::find_by_id(pool, id)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Estágio não encontrado.".to_string()))?;
         Repository::delete(pool, id, stage.project_id, stage.order).await
     }
 }

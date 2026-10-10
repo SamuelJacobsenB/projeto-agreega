@@ -4,6 +4,7 @@ use uuid::Uuid;
 /// Representa uma foto relacionada a um projeto.
 /// Conecta-se a Project, File e User.
 /// Usado para registrar e apresentar imagens do andamento ou execução do projeto.
+#[derive(sqlx::FromRow)]
 pub struct Photo {
     pub id: Uuid,
 

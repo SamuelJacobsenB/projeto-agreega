@@ -11,6 +11,7 @@ use crate::{
         service::Service,
     },
     response::{ApiResponse, ApiResult, ValidatedJson},
+    security::auth_user::AuthUser,
 };
 
 pub struct Handler;
@@ -18,9 +19,10 @@ pub struct Handler;
 impl Handler {
     pub async fn list_project_stages(
         State(state): State<AppState>,
+        AuthUser { id: user_id, role }: AuthUser,
         Path(project_id): Path<Uuid>,
     ) -> ApiResult<Vec<StageResponseDto>> {
-        let stages = Service::list_project_stages(&state.pool, project_id).await?;
+        let stages = Service::list_project_stages(&state.pool, project_id, user_id, role).await?;
 
         let stage_dtos = stages.into_iter().map(StageResponseDto::from).collect();
 
@@ -32,9 +34,10 @@ impl Handler {
 
     pub async fn get_stage_by_id(
         State(state): State<AppState>,
+        AuthUser { id: user_id, role }: AuthUser,
         Path(id): Path<Uuid>,
     ) -> ApiResult<StageResponseDto> {
-        let stage = Service::get_stage_by_id(&state.pool, id).await?;
+        let stage = Service::get_stage_by_id(&state.pool, id, user_id, role).await?;
 
         Ok((
             StatusCode::OK,
