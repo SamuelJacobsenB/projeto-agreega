@@ -16,29 +16,23 @@ pub struct CreateDocumentRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub task_id: Option<Uuid>,
 
+    #[validate(length(max = 200))]
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: String,
     pub document_type: DocumentType,
     pub status: DocumentStatus,
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub created_by: Uuid,
 }
 
 #[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateDocumentRequestDto {
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub stage_id: Option<Uuid>,
-
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub task_id: Option<Uuid>,
-
+    #[validate(length(max = 200))]
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub name: Option<String>,
     pub document_type: Option<DocumentType>,
     pub status: Option<DocumentStatus>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize)]
 pub struct DocumentResponseDto {
     pub id: Uuid,
     pub project_id: Uuid,

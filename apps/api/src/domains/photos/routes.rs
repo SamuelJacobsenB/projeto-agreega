@@ -8,7 +8,6 @@ use crate::app::AppState;
 
 pub fn authenticated_routes() -> Router<AppState> {
     Router::new()
-        .route("/project/{project_id}", get(Handler::list_project_photos))
         .route("/stage/{stage_id}", get(Handler::list_stage_photos))
         .route("/task/{task_id}", get(Handler::list_task_photos))
         .route("/{id}", get(Handler::get_photo_by_id))

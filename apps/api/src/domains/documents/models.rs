@@ -5,6 +5,7 @@ use uuid::Uuid;
 /// Representa um documento pertencente a um projeto.
 /// Conecta-se a Project, DocumentVersion, DocumentComment e DocumentApproval.
 /// Usado para disponibilizar e controlar documentos relacionados ao projeto.
+#[derive(sqlx::FromRow)]
 pub struct Document {
     pub id: Uuid,
 

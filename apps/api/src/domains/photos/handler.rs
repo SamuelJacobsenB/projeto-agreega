@@ -19,24 +19,6 @@ use super::{
 pub struct Handler;
 
 impl Handler {
-    pub async fn list_project_photos(
-        State(state): State<AppState>,
-        AuthUser { id, role }: AuthUser,
-        Path(project_id): Path<Uuid>,
-    ) -> ApiResult<Vec<PhotoResponseDto>> {
-        let photos = Service::list_project_photos(&state.pool, project_id, id, role).await?;
-
-        let photo_dtos = photos
-            .into_iter()
-            .map(PhotoResponseDto::from_model)
-            .collect();
-
-        Ok((
-            StatusCode::OK,
-            ApiResponse::success("Fotos do projeto encontradas.", Some(photo_dtos)),
-        ))
-    }
-
     pub async fn list_stage_photos(
         State(state): State<AppState>,
         AuthUser { id, role }: AuthUser,

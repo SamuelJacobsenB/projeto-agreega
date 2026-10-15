@@ -22,16 +22,6 @@ use crate::{
 pub struct Service;
 
 impl Service {
-    pub async fn list_project_photos(
-        pool: &PgPool,
-        project_id: Uuid,
-        user_id: Uuid,
-        role: UserRole,
-    ) -> AppResult<Vec<Photo>> {
-        authorize_project_access(pool, project_id, user_id, role).await?;
-        Repository::find_by_project_id(pool, project_id).await
-    }
-
     pub async fn list_stage_photos(
         pool: &PgPool,
         stage_id: Uuid,

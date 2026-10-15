@@ -6,7 +6,7 @@ CREATE TABLE documents (
     name VARCHAR(200) NOT NULL,
     document_type DOCUMENT_TYPE NOT NULL,
     status DOCUMENT_STATUS NOT NULL DEFAULT 'draft',
-    current_version SMALLINT NOT NULL DEFAULT 1,
+    current_version SMALLINT NOT NULL DEFAULT 0,
     created_by UUID NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -16,7 +16,7 @@ CREATE TABLE documents (
     SET
         NULL,
         CONSTRAINT fk_documents_created_by FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE RESTRICT,
-        CONSTRAINT chk_documents_current_version CHECK (current_version >= 1)
+        CONSTRAINT chk_documents_current_version CHECK (current_version >= 0)
 );
 
 CREATE INDEX idx_documents_project_id ON documents (project_id);

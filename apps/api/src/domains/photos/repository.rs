@@ -7,21 +7,6 @@ use crate::response::{AppError, AppResult};
 pub struct Repository;
 
 impl Repository {
-    pub async fn find_by_project_id(pool: &PgPool, project_id: Uuid) -> AppResult<Vec<Photo>> {
-        sqlx::query_as::<_, Photo>(
-            r#"
-				SELECT *
-				FROM photos
-				WHERE project_id = $1
-				ORDER BY created_at DESC
-			"#,
-        )
-        .bind(project_id)
-        .fetch_all(pool)
-        .await
-        .map_err(|_| AppError::Database("Falha ao buscar fotos do projeto.".to_string()))
-    }
-
     pub async fn find_by_stage_id(pool: &PgPool, stage_id: Uuid) -> AppResult<Vec<Photo>> {
         sqlx::query_as::<_, Photo>(
             r#"
