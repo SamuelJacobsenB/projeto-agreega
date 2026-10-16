@@ -123,6 +123,6 @@ impl Service {
         let file = FileService::get_file_by_id(pool, photo.file_id).await?;
         let content = StorageService::read_file(&file.storage_key).await?;
 
-        file_response::file(content, &file.mime_type)
+        file_response::private_file(content, &file.mime_type)
     }
 }

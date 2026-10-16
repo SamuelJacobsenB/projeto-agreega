@@ -2,7 +2,7 @@ use axum::{
     body::Body,
     http::{
         HeaderValue,
-        header::{CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE},
+        header::{CACHE_CONTROL, CONTENT_DISPOSITION, CONTENT_LENGTH, CONTENT_TYPE},
     },
     response::Response,
 };
@@ -27,6 +27,22 @@ pub fn file(content: Vec<u8>, mime_type: &str) -> AppResult<Response> {
     response.headers_mut().insert(
         CACHE_CONTROL,
         HeaderValue::from_static("public, max-age=31536000, immutable"),
+    );
+
+    Ok(response)
+}
+
+pub fn private_file(content: Vec<u8>, mime_type: &str) -> AppResult<Response> {
+    let mut response = file(content, mime_type)?;
+    response
+        .headers_mut()
+        .insert(CACHE_CONTROL, HeaderValue::from_static("private, no-store"));
+    response
+        .headers_mut()
+        .insert(CONTENT_DISPOSITION, HeaderValue::from_static("attachment"));
+    response.headers_mut().insert(
+        "x-content-type-options",
+        HeaderValue::from_static("nosniff"),
     );
 
     Ok(response)

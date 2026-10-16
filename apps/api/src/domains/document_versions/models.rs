@@ -4,6 +4,7 @@ use uuid::Uuid;
 /// Representa uma versão específica de um documento.
 /// Conecta-se a Document, File e User.
 /// Usado para manter o histórico de alterações e versões dos documentos.
+#[derive(sqlx::FromRow)]
 pub struct DocumentVersion {
     pub id: Uuid,
 
