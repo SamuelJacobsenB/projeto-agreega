@@ -12,6 +12,8 @@ pub struct CreateDocumentApprovalRequestDto {
 
     #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub document_version_id: Uuid,
+
+    #[validate(length(max = 500, message = "O comentário deve ter no máximo 500 caracteres."))]
     pub comment: Option<String>,
 }
 
@@ -19,12 +21,11 @@ pub struct CreateDocumentApprovalRequestDto {
 pub struct ReviewDocumentApprovalRequestDto {
     pub status: ApprovalStatus,
 
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub reviewed_by: Uuid,
+    #[validate(length(max = 500, message = "O comentário deve ter no máximo 500 caracteres."))]
     pub comment: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct DocumentApprovalResponseDto {
     pub id: Uuid,
     pub document_id: Uuid,

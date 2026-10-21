@@ -5,6 +5,7 @@ use uuid::Uuid;
 /// Representa uma solicitação e seu resultado de aprovação de uma versão de documento.
 /// Conecta-se a Document e User.
 /// Usado quando um documento precisa ser revisado, aprovado ou ter alterações solicitadas.
+#[derive(sqlx::FromRow)]
 pub struct DocumentApproval {
     pub id: Uuid,
 
@@ -21,7 +22,7 @@ pub struct DocumentApproval {
     pub reviewed_at: Option<DateTime<Utc>>,
 }
 
-#[derive(sqlx::Type, Serialize, Deserialize)]
+#[derive(sqlx::Type, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[sqlx(type_name = "approval_status", rename_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum ApprovalStatus {
