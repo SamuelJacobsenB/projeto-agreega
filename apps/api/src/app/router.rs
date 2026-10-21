@@ -26,6 +26,7 @@ use crate::{
         invitations::routes::{
             public_routes as invitations_public_routes, staff_routes as invitations_staff_routes,
         },
+        messages::routes::authenticated_routes as messages_authenticated_routes,
         photos::routes::{
             authenticated_routes as photos_authenticated_routes,
             staff_routes as photos_staff_routes,
@@ -65,6 +66,7 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/users", users_authenticated_routes())
         .nest("/stages", stages_authenticated_routes())
         .nest("/tasks", tasks_authenticated_routes())
+        .nest("/messages", messages_authenticated_routes())
         .nest("/documents", documents_authenticated_routes())
         .nest(
             "/document-approvals",

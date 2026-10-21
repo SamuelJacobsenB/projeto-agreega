@@ -4,6 +4,7 @@ use uuid::Uuid;
 /// Representa uma mensagem enviada dentro de um projeto.
 /// Conecta-se a Project, User e MessageAttachment.
 /// Usado para comunicação entre clientes e equipe da Agreega.
+#[derive(sqlx::FromRow)]
 pub struct Message {
     pub id: Uuid,
 

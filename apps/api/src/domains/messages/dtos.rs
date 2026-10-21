@@ -8,20 +8,19 @@ pub struct CreateMessageRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub project_id: Uuid,
 
-    #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
-    pub sender_id: Uuid,
-
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
+    #[validate(length(max = 2000, message = "Mensagem não pode exceder 2000 caracteres."))]
     pub content: String,
 }
 
 #[derive(Deserialize, Serialize, Validate)]
-pub struct UpdateMessageRequestDto {
+pub struct UpdateMessageContentRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
-    pub content: Option<String>,
+    #[validate(length(max = 2000, message = "Mensagem não pode exceder 2000 caracteres."))]
+    pub content: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct MessageResponseDto {
     pub id: Uuid,
     pub project_id: Uuid,
