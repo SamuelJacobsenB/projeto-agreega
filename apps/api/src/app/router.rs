@@ -10,6 +10,7 @@ use crate::{
             authenticated_routes as clients_authenticated_routes,
             staff_routes as clients_staff_routes,
         },
+        document_comments::routes::authenticated_routes as document_comments_authenticated_routes,
         document_versions::routes::{
             authenticated_routes as document_versions_authenticated_routes,
             staff_routes as document_versions_staff_routes,
@@ -63,7 +64,8 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/documents", documents_authenticated_routes())
         .nest(
             "/document-versions",
-            document_versions_authenticated_routes(),
+            document_versions_authenticated_routes()
+                .merge(document_comments_authenticated_routes()),
         )
         .nest("/photos", photos_authenticated_routes())
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));

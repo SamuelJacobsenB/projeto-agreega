@@ -1,14 +1,14 @@
 CREATE TABLE document_comments (
     id UUID PRIMARY KEY,
-    document_id UUID NOT NULL,
+    document_version_id UUID NOT NULL,
     user_id UUID NOT NULL,
     content VARCHAR(500) NOT NULL,
-    page INTEGER,
+    page SMALLINT,
     position_x REAL,
     position_y REAL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ,
-    CONSTRAINT fk_document_comments_document FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,
+    CONSTRAINT fk_document_comments_document_version FOREIGN KEY (document_version_id) REFERENCES document_versions (id) ON DELETE CASCADE,
     CONSTRAINT fk_document_comments_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
     CONSTRAINT chk_document_comments_page CHECK (
         page IS NULL
@@ -24,6 +24,6 @@ CREATE TABLE document_comments (
     )
 );
 
-CREATE INDEX idx_document_comments_document_id ON document_comments (document_id);
+CREATE INDEX idx_document_comments_document_version_id ON document_comments (document_version_id);
 
 CREATE INDEX idx_document_comments_user_id ON document_comments (user_id);

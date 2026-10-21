@@ -4,7 +4,7 @@ impl From<DocumentComment> for DocumentCommentResponseDto {
     fn from(comment: DocumentComment) -> Self {
         Self {
             id: comment.id,
-            document_id: comment.document_id,
+            document_version_id: comment.document_version_id,
             user_id: comment.user_id,
             content: comment.content,
             page: comment.page,
