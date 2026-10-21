@@ -11,7 +11,7 @@ pub struct CreateMessageAttachmentRequestDto {
     pub file_id: Uuid,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct MessageAttachmentResponseDto {
     pub message_id: Uuid,
     pub file_id: Uuid,
