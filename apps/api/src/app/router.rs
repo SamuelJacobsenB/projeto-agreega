@@ -28,6 +28,7 @@ use crate::{
         },
         message_attachments::routes::authenticated_routes as message_attachments_authenticated_routes,
         messages::routes::authenticated_routes as messages_authenticated_routes,
+        notifications::routes::authenticated_routes as notifications_authenticated_routes,
         photos::routes::{
             authenticated_routes as photos_authenticated_routes,
             staff_routes as photos_staff_routes,
@@ -68,6 +69,7 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/stages", stages_authenticated_routes())
         .nest("/tasks", tasks_authenticated_routes())
         .nest("/messages", messages_authenticated_routes())
+        .nest("/notifications", notifications_authenticated_routes())
         .nest(
             "/message-attachments",
             message_attachments_authenticated_routes(),

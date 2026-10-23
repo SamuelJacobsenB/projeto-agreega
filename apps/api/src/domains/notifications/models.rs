@@ -5,6 +5,7 @@ use uuid::Uuid;
 /// Representa uma notificação direcionada a um usuário.
 /// Conecta-se a User.
 /// Usado para informar sobre eventos importantes, como novas mensagens, documentos ou aprovações.
+#[derive(sqlx::FromRow)]
 pub struct Notification {
     pub id: Uuid,
 
