@@ -1,10 +1,7 @@
-use std::collections::BTreeMap;
-
 use sqlx::PgPool;
 use uuid::Uuid;
-use validator::Validate;
 
-use crate::response::{AppError, AppResult};
+use crate::response::AppResult;
 
 use super::{
     dtos::{CreateNotificationRequestDto, ListNotificationsQueryDto, UpdateNotificationRequestDto},

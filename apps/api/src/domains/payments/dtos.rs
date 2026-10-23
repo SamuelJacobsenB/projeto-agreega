@@ -11,27 +11,29 @@ pub struct CreatePaymentRequestDto {
     #[validate(custom(function = "crate::validation::validate_not_nil_uuid"))]
     pub project_id: Uuid,
 
+    #[validate(length(max = 255))]
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub description: String,
 
-    #[validate(custom(function = "crate::validation::validate_positive_decimal"))]
+    #[validate(custom(function = "crate::domains::payments::dtos::validate_payment_amount"))]
     pub amount: Decimal,
     pub due_date: Option<NaiveDate>,
-    pub status: PaymentStatus,
 }
 
 #[derive(Deserialize, Serialize, Validate)]
 pub struct UpdatePaymentRequestDto {
+    #[validate(length(max = 255))]
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub description: Option<String>,
 
-    #[validate(custom(function = "crate::validation::validate_positive_decimal"))]
+    #[validate(custom(function = "crate::domains::payments::dtos::validate_payment_amount"))]
     pub amount: Option<Decimal>,
-    pub due_date: Option<NaiveDate>,
+    #[serde(default)]
+    pub due_date: Option<Option<NaiveDate>>,
     pub status: Option<PaymentStatus>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize)]
 pub struct PaymentResponseDto {
     pub id: Uuid,
     pub project_id: Uuid,
@@ -42,4 +44,20 @@ pub struct PaymentResponseDto {
     pub status: PaymentStatus,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+pub fn validate_payment_amount(value: &Decimal) -> Result<(), validator::ValidationError> {
+    if value <= &Decimal::ZERO
+        || value.round_dp(2) != *value
+        || value > &Decimal::new(999_999_999_999, 2)
+    {
+        let mut error = validator::ValidationError::new("invalid_payment_amount");
+        error.message = Some(
+            "O valor deve ser positivo, ter no máximo duas casas decimais e caber no limite aceito."
+                .into(),
+        );
+        return Err(error);
+    }
+
+    Ok(())
 }

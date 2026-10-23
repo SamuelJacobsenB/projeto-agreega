@@ -6,6 +6,7 @@ use uuid::Uuid;
 /// Representa um pagamento ou compromisso financeiro relacionado a um projeto.
 /// Conecta-se a Project.
 /// Usado para acompanhar valores, vencimentos e pagamentos do projeto.
+#[derive(sqlx::FromRow)]
 pub struct Payment {
     pub id: Uuid,
 
