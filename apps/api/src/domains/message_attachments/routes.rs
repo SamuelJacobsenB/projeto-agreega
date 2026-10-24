@@ -1,5 +1,6 @@
 use axum::{
     Router,
+    extract::DefaultBodyLimit,
     routing::{get, post},
 };
 
@@ -8,11 +9,15 @@ use crate::middlewares::rate_limit::{self, RateLimitPolicies};
 
 use super::handler::Handler;
 
-pub fn authenticated_routes(policies: &RateLimitPolicies) -> Router<AppState> {
+pub fn authenticated_routes(
+    policies: &RateLimitPolicies,
+    max_upload_body_size_bytes: usize,
+) -> Router<AppState> {
     Router::new()
         .route(
             "/",
-            rate_limit::protect_route(post(Handler::create), policies.upload.clone()),
+            rate_limit::protect_route(post(Handler::create), policies.upload.clone())
+                .layer(DefaultBodyLimit::max(max_upload_body_size_bytes)),
         )
         .route("/message/{message_id}", get(Handler::list_by_message_id))
         .route(

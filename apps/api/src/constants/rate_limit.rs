@@ -1,16 +1,32 @@
-pub const GENERAL_REQUESTS_PER_SECOND: u32 = 2;
-pub const GENERAL_BURST: u32 = 30;
+#[derive(Clone)]
+pub struct RateLimitSettings {
+    pub general_requests_per_second: u32,
+    pub general_burst: u32,
+    pub login_requests_per_minute: u32,
+    pub password_reset_requests_per_minute: u32,
+    pub session_refresh_requests_per_minute: u32,
+    pub upload_requests_per_minute: u32,
+    pub invitation_accept_requests_per_minute: u32,
+    pub invitation_create_requests_per_hour: u32,
+    pub invitation_create_burst: u32,
+    pub max_tracked_clients_per_policy: usize,
+    pub gc_interval_seconds: u64,
+}
 
-pub const LOGIN_REQUESTS_PER_MINUTE: u32 = 5;
-
-pub const PASSWORD_RESET_REQUESTS_PER_MINUTE: u32 = 3;
-
-pub const SESSION_REFRESH_REQUESTS_PER_MINUTE: u32 = 20;
-
-pub const UPLOAD_REQUESTS_PER_MINUTE: u32 = 10;
-
-pub const INVITATION_ACCEPT_REQUESTS_PER_MINUTE: u32 = 5;
-pub const INVITATION_CREATE_REQUESTS_PER_HOUR: u32 = 10;
-pub const INVITATION_CREATE_BURST: u32 = 3;
-
-pub const MAX_TRACKED_CLIENTS_PER_POLICY: usize = 10_000;
+impl Default for RateLimitSettings {
+    fn default() -> Self {
+        Self {
+            general_requests_per_second: 2,
+            general_burst: 30,
+            login_requests_per_minute: 5,
+            password_reset_requests_per_minute: 3,
+            session_refresh_requests_per_minute: 20,
+            upload_requests_per_minute: 10,
+            invitation_accept_requests_per_minute: 5,
+            invitation_create_requests_per_hour: 10,
+            invitation_create_burst: 3,
+            max_tracked_clients_per_policy: 10_000,
+            gc_interval_seconds: 30,
+        }
+    }
+}

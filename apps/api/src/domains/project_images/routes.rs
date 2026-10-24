@@ -1,5 +1,6 @@
 use axum::{
     Router,
+    extract::DefaultBodyLimit,
     routing::{delete, get, patch, post},
 };
 
@@ -18,11 +19,15 @@ pub fn public_routes() -> Router<AppState> {
         .route("/{id}/file", get(Handler::get_file))
 }
 
-pub fn staff_routes(policies: &RateLimitPolicies) -> Router<AppState> {
+pub fn staff_routes(
+    policies: &RateLimitPolicies,
+    max_upload_body_size_bytes: usize,
+) -> Router<AppState> {
     Router::new()
         .route(
             "/",
-            rate_limit::protect_route(post(Handler::create_project_image), policies.upload.clone()),
+            rate_limit::protect_route(post(Handler::create_project_image), policies.upload.clone())
+                .layer(DefaultBodyLimit::max(max_upload_body_size_bytes)),
         )
         .route(
             "/project/{project_id}/reorder",

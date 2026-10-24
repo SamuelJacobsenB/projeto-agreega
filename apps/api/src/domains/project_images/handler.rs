@@ -74,8 +74,14 @@ impl Handler {
         }: AuthUser,
         ValidatedMultipart { data: dto, file }: ValidatedMultipart<CreateProjectImageRequestDto>,
     ) -> ApiResult<ProjectImageResponseDto> {
-        let project_image =
-            Service::create_project_image(&state.pool, &dto, file, uploaded_by).await?;
+        let project_image = Service::create_project_image(
+            &state.pool,
+            &dto,
+            file,
+            uploaded_by,
+            state.config.max_upload_size_bytes,
+        )
+        .await?;
 
         Ok((
             StatusCode::CREATED,

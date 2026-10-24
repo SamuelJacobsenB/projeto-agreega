@@ -63,8 +63,15 @@ impl Handler {
         }: AuthUser,
         ValidatedMultipart { data, file }: ValidatedMultipart<CreateDocumentVersionRequestDto>,
     ) -> ApiResult<DocumentVersionResponseDto> {
-        let version =
-            Service::create_document_version(&state.pool, &data, file, uploaded_by, role).await?;
+        let version = Service::create_document_version(
+            &state.pool,
+            &data,
+            file,
+            uploaded_by,
+            role,
+            state.config.max_upload_size_bytes,
+        )
+        .await?;
 
         Ok((
             StatusCode::CREATED,

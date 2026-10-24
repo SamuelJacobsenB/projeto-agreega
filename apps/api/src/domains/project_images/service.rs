@@ -49,6 +49,7 @@ impl Service {
         dto: &CreateProjectImageRequestDto,
         file: UploadedFile,
         uploaded_by: Uuid,
+        max_upload_size_bytes: i64,
     ) -> AppResult<ProjectImage> {
         ProjectService::get_project_by_id(pool, dto.project_id).await?;
 
@@ -59,6 +60,7 @@ impl Service {
             &file.content,
             &["image/jpeg", "image/png", "image/webp"],
             uploaded_by,
+            max_upload_size_bytes,
         )
         .await?;
 

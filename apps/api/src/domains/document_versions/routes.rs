@@ -8,8 +8,6 @@ use super::handler::Handler;
 use crate::app::AppState;
 use crate::middlewares::rate_limit::{self, RateLimitPolicies};
 
-const MAX_MULTIPART_BODY_SIZE: usize = 20 * 1024 * 1024 + 64 * 1024;
-
 pub fn authenticated_routes() -> Router<AppState> {
     Router::new()
         .route("/document/{document_id}", get(Handler::list_by_document_id))
@@ -17,10 +15,13 @@ pub fn authenticated_routes() -> Router<AppState> {
         .route("/{id}/file", get(Handler::get_file))
 }
 
-pub fn staff_routes(policies: &RateLimitPolicies) -> Router<AppState> {
+pub fn staff_routes(
+    policies: &RateLimitPolicies,
+    max_upload_body_size_bytes: usize,
+) -> Router<AppState> {
     Router::new().route(
         "/",
         rate_limit::protect_route(post(Handler::create), policies.upload.clone())
-            .layer(DefaultBodyLimit::max(MAX_MULTIPART_BODY_SIZE)),
+            .layer(DefaultBodyLimit::max(max_upload_body_size_bytes)),
     )
 }

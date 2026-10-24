@@ -66,7 +66,10 @@ use crate::{
 };
 
 pub fn create_router(state: AppState) -> Router {
-    let rate_limits = rate_limit::RateLimitPolicies::new(&state.config.trusted_proxy_cidrs);
+    let rate_limits = rate_limit::RateLimitPolicies::new(
+        &state.config.rate_limits,
+        &state.config.trusted_proxy_cidrs,
+    );
 
     let public = Router::new()
         .nest("/auth", auth_public_routes(&rate_limits))
@@ -85,7 +88,10 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/payments", payments_authenticated_routes())
         .nest(
             "/message-attachments",
-            message_attachments_authenticated_routes(&rate_limits),
+            message_attachments_authenticated_routes(
+                &rate_limits,
+                state.config.max_upload_body_size_bytes,
+            ),
         )
         .nest("/documents", documents_authenticated_routes())
         .nest(
@@ -102,7 +108,10 @@ pub fn create_router(state: AppState) -> Router {
 
     let staff = Router::new()
         .nest("/clients", clients_staff_routes())
-        .nest("/project-images", project_images_staff_routes(&rate_limits))
+        .nest(
+            "/project-images",
+            project_images_staff_routes(&rate_limits, state.config.max_upload_body_size_bytes),
+        )
         .nest("/projects", projects_staff_routes())
         .nest("/users", users_staff_routes())
         .nest("/stages", stages_staff_routes())
@@ -112,9 +121,12 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/document-approvals", document_approvals_staff_routes())
         .nest(
             "/document-versions",
-            document_versions_staff_routes(&rate_limits),
+            document_versions_staff_routes(&rate_limits, state.config.max_upload_body_size_bytes),
         )
-        .nest("/photos", photos_staff_routes(&rate_limits))
+        .nest(
+            "/photos",
+            photos_staff_routes(&rate_limits, state.config.max_upload_body_size_bytes),
+        )
         .nest("/invitations", invitations_staff_routes(&rate_limits))
         .layer(middleware::from_fn(require_staff))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));

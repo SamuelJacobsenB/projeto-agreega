@@ -8,8 +8,6 @@ use crate::{
     response::{AppError, AppResult},
 };
 
-const MAX_FILE_SIZE: i64 = 20 * 1024 * 1024;
-
 pub struct Service;
 
 impl Service {
@@ -26,6 +24,7 @@ impl Service {
         content: &[u8],
         allowed_mime_types: &[&str],
         uploaded_by: Uuid,
+        max_file_size_bytes: i64,
     ) -> AppResult<File> {
         let mime_type = infer::get(content)
             .map(|kind| kind.mime_type().to_string())
@@ -34,9 +33,9 @@ impl Service {
             })?;
 
         let size_bytes = content.len() as i64;
-        if size_bytes > MAX_FILE_SIZE {
+        if size_bytes > max_file_size_bytes {
             return Err(AppError::BadRequest(
-                "O arquivo excede o tamanho máximo permitido de 20 MB.".to_string(),
+                "O arquivo excede o tamanho máximo permitido.".to_string(),
             ));
         }
 

@@ -61,6 +61,7 @@ impl Service {
         file: UploadedFile,
         uploaded_by: Uuid,
         role: UserRole,
+        max_upload_size_bytes: i64,
     ) -> AppResult<Photo> {
         let stage = StageService::get_stage_by_id(pool, dto.stage_id, uploaded_by, role).await?;
         if stage.project_id != dto.project_id {
@@ -85,6 +86,7 @@ impl Service {
             &file.content,
             &["image/jpeg", "image/png", "image/webp"],
             uploaded_by,
+            max_upload_size_bytes,
         )
         .await?;
 

@@ -37,12 +37,12 @@ impl Service {
         let token_hash = TokenService::hash_token(&token);
         let expires_at = Utc::now() + Duration::days(INVITATION_DAYS);
 
-        let invitation =
-            Repository::create_invitation(pool, dto, invited_by, &token_hash, expires_at).await?;
-
         email_service
             .send_invitation_email(&dto.email, &token)
             .await?;
+
+        let invitation =
+            Repository::create_invitation(pool, dto, invited_by, &token_hash, expires_at).await?;
 
         Ok(invitation)
     }

@@ -148,7 +148,7 @@ impl Handler {
             .http_only(true)
             .secure(cookie_secure)
             .same_site(SameSite::Lax)
-            .path("/api/auth")
+            .path("/api/v1/auth")
             .build()
     }
 
@@ -157,7 +157,7 @@ impl Handler {
             .http_only(true)
             .secure(cookie_secure)
             .same_site(SameSite::Lax)
-            .path("/api/auth")
+            .path("/api/v1/auth")
             .build()
     }
 

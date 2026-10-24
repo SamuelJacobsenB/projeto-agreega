@@ -79,7 +79,15 @@ impl Handler {
         }: AuthUser,
         ValidatedMultipart { data, file }: ValidatedMultipart<CreatePhotoRequestDto>,
     ) -> ApiResult<PhotoResponseDto> {
-        let photo = Service::create_photo(&state.pool, &data, file, uploaded_by, role).await?;
+        let photo = Service::create_photo(
+            &state.pool,
+            &data,
+            file,
+            uploaded_by,
+            role,
+            state.config.max_upload_size_bytes,
+        )
+        .await?;
         Ok((
             StatusCode::CREATED,
             ApiResponse::success(

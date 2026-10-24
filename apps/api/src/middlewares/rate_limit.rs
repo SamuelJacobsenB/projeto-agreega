@@ -9,7 +9,7 @@ use axum::{
 use axum_governor::{GovernorConfigBuilder, GovernorLayer, Quota, RejectionReason, SmartIp};
 use ipnet::IpNet;
 
-use crate::{constants::rate_limit as limits, response::ApiResponse};
+use crate::{constants::rate_limit::RateLimitSettings, response::ApiResponse};
 
 pub type RateLimitLayer = GovernorLayer<IpAddr>;
 
@@ -26,16 +26,16 @@ pub struct RateLimitPolicies {
 }
 
 impl RateLimitPolicies {
-    pub fn new(trusted_proxies: &[IpNet]) -> Self {
+    pub fn new(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> Self {
         Self {
-            general: general(trusted_proxies),
-            login: login(trusted_proxies),
-            password_reset_request: password_reset(trusted_proxies),
-            password_reset_complete: password_reset(trusted_proxies),
-            session_refresh: session_refresh(trusted_proxies),
-            upload: upload(trusted_proxies),
-            invitation_accept: invitation_accept(trusted_proxies),
-            invitation_create: invitation_create(trusted_proxies),
+            general: general(settings, trusted_proxies),
+            login: login(settings, trusted_proxies),
+            password_reset_request: password_reset(settings, trusted_proxies),
+            password_reset_complete: password_reset(settings, trusted_proxies),
+            session_refresh: session_refresh(settings, trusted_proxies),
+            upload: upload(settings, trusted_proxies),
+            invitation_accept: invitation_accept(settings, trusted_proxies),
+            invitation_create: invitation_create(settings, trusted_proxies),
         }
     }
 }
@@ -47,13 +47,17 @@ where
     route.layer::<_, std::convert::Infallible>(layer)
 }
 
-fn with_rate_limit(quota: Quota, trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn with_rate_limit(
+    quota: Quota,
+    settings: &RateLimitSettings,
+    trusted_proxies: &[IpNet],
+) -> RateLimitLayer {
     let config = GovernorConfigBuilder::default()
         .with_extractor(SmartIp::new().with_trusted_proxies(trusted_proxies.iter().copied()))
         .expect_connect_info()
         .quota_default(quota)
-        .gc_interval(Duration::from_secs(30))
-        .max_keys(limits::MAX_TRACKED_CLIENTS_PER_POLICY)
+        .gc_interval(Duration::from_secs(settings.gc_interval_seconds))
+        .max_keys(settings.max_tracked_clients_per_policy)
         .redact_keys(true)
         .error_handler(rate_limit_error_response)
         .finish()
@@ -82,80 +86,105 @@ fn rate_limit_error_response(reason: RejectionReason) -> Response {
     response
 }
 
-pub fn general(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn general(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_second(
-            NonZeroU32::new(limits::GENERAL_REQUESTS_PER_SECOND)
+            NonZeroU32::new(settings.general_requests_per_second)
                 .expect("General rate must be greater than zero"),
         )
         .burst(
-            NonZeroU32::new(limits::GENERAL_BURST)
+            NonZeroU32::new(settings.general_burst)
                 .expect("General burst must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
 }
 
-pub fn login(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn login(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_minute(
-            NonZeroU32::new(limits::LOGIN_REQUESTS_PER_MINUTE)
+            NonZeroU32::new(settings.login_requests_per_minute)
                 .expect("Login rate must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
 }
 
-pub fn password_reset(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn password_reset(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_minute(
-            NonZeroU32::new(limits::PASSWORD_RESET_REQUESTS_PER_MINUTE)
+            NonZeroU32::new(settings.password_reset_requests_per_minute)
                 .expect("Password reset rate must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
 }
 
-pub fn session_refresh(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn session_refresh(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_minute(
-            NonZeroU32::new(limits::SESSION_REFRESH_REQUESTS_PER_MINUTE)
+            NonZeroU32::new(settings.session_refresh_requests_per_minute)
                 .expect("Session refresh rate must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
 }
 
-pub fn upload(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn upload(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_minute(
-            NonZeroU32::new(limits::UPLOAD_REQUESTS_PER_MINUTE)
+            NonZeroU32::new(settings.upload_requests_per_minute)
                 .expect("Upload rate must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
 }
 
-pub fn invitation_accept(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn invitation_accept(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_minute(
-            NonZeroU32::new(limits::INVITATION_ACCEPT_REQUESTS_PER_MINUTE)
+            NonZeroU32::new(settings.invitation_accept_requests_per_minute)
                 .expect("Invitation acceptance rate must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
 }
 
-pub fn invitation_create(trusted_proxies: &[IpNet]) -> RateLimitLayer {
+fn invitation_create(settings: &RateLimitSettings, trusted_proxies: &[IpNet]) -> RateLimitLayer {
     with_rate_limit(
         Quota::requests_per_hour(
-            NonZeroU32::new(limits::INVITATION_CREATE_REQUESTS_PER_HOUR)
+            NonZeroU32::new(settings.invitation_create_requests_per_hour)
                 .expect("Invitation creation rate must be greater than zero"),
         )
         .burst(
-            NonZeroU32::new(limits::INVITATION_CREATE_BURST)
+            NonZeroU32::new(settings.invitation_create_burst)
                 .expect("Invitation creation burst must be greater than zero"),
         ),
+        settings,
         trusted_proxies,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RateLimitPolicies;
+    use crate::constants::rate_limit::RateLimitSettings;
+
+    #[test]
+    fn constructs_all_limiters_from_runtime_settings() {
+        let settings = RateLimitSettings {
+            login_requests_per_minute: 8,
+            max_tracked_clients_per_policy: 2_000,
+            ..RateLimitSettings::default()
+        };
+        let trusted_proxies = ["10.0.0.0/8".parse().unwrap()];
+
+        let _policies = RateLimitPolicies::new(&settings, &trusted_proxies);
+    }
 }

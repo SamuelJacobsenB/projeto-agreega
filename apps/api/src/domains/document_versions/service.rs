@@ -66,6 +66,7 @@ impl Service {
         file: UploadedFile,
         uploaded_by: Uuid,
         role: UserRole,
+        max_upload_size_bytes: i64,
     ) -> AppResult<DocumentVersion> {
         DocumentService::get_document_by_id(pool, dto.document_id, uploaded_by, role).await?;
 
@@ -76,6 +77,7 @@ impl Service {
             &file.content,
             DOCUMENT_MIME_TYPES,
             uploaded_by,
+            max_upload_size_bytes,
         )
         .await?;
 
