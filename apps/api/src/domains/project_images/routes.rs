@@ -5,6 +5,7 @@ use axum::{
 
 use super::handler::Handler;
 use crate::app::AppState;
+use crate::middlewares::rate_limit::{self, RateLimitPolicies};
 
 pub fn public_routes() -> Router<AppState> {
     Router::new()
@@ -17,9 +18,12 @@ pub fn public_routes() -> Router<AppState> {
         .route("/{id}/file", get(Handler::get_file))
 }
 
-pub fn staff_routes() -> Router<AppState> {
+pub fn staff_routes(policies: &RateLimitPolicies) -> Router<AppState> {
     Router::new()
-        .route("/", post(Handler::create_project_image))
+        .route(
+            "/",
+            rate_limit::protect_route(post(Handler::create_project_image), policies.upload.clone()),
+        )
         .route(
             "/project/{project_id}/reorder",
             patch(Handler::reorder_project_images),

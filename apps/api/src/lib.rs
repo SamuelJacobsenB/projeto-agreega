@@ -1,5 +1,6 @@
 pub mod app;
 pub mod config;
+pub mod constants;
 pub mod domains;
 pub mod infrastructure;
 pub mod middlewares;

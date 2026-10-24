@@ -5,6 +5,7 @@ use axum::{
 
 use super::handler::Handler;
 use crate::app::AppState;
+use crate::middlewares::rate_limit::{self, RateLimitPolicies};
 
 pub fn authenticated_routes() -> Router<AppState> {
     Router::new()
@@ -14,9 +15,14 @@ pub fn authenticated_routes() -> Router<AppState> {
         .route("/{id}/file", get(Handler::get_file))
 }
 
-pub fn staff_routes() -> Router<AppState> {
-    Router::new().route("/", post(Handler::create_photo)).route(
-        "/{id}",
-        patch(Handler::update_description).delete(Handler::delete_photo),
-    )
+pub fn staff_routes(policies: &RateLimitPolicies) -> Router<AppState> {
+    Router::new()
+        .route(
+            "/",
+            rate_limit::protect_route(post(Handler::create_photo), policies.upload.clone()),
+        )
+        .route(
+            "/{id}",
+            patch(Handler::update_description).delete(Handler::delete_photo),
+        )
 }

@@ -61,13 +61,16 @@ use crate::{
         auth::{require_admin, require_auth, require_staff},
         cors::cors_layer,
         logging::log_security_events,
+        rate_limit,
     },
 };
 
 pub fn create_router(state: AppState) -> Router {
+    let rate_limits = rate_limit::RateLimitPolicies::new(&state.config.trusted_proxy_cidrs);
+
     let public = Router::new()
-        .nest("/auth", auth_public_routes())
-        .nest("/invitations", invitations_public_routes())
+        .nest("/auth", auth_public_routes(&rate_limits))
+        .nest("/invitations", invitations_public_routes(&rate_limits))
         .nest("/project-images", project_images_public_routes());
 
     let authenticated_routes = Router::new()
@@ -82,7 +85,7 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/payments", payments_authenticated_routes())
         .nest(
             "/message-attachments",
-            message_attachments_authenticated_routes(),
+            message_attachments_authenticated_routes(&rate_limits),
         )
         .nest("/documents", documents_authenticated_routes())
         .nest(
@@ -99,8 +102,7 @@ pub fn create_router(state: AppState) -> Router {
 
     let staff = Router::new()
         .nest("/clients", clients_staff_routes())
-        .nest("/invitations", invitations_staff_routes())
-        .nest("/project-images", project_images_staff_routes())
+        .nest("/project-images", project_images_staff_routes(&rate_limits))
         .nest("/projects", projects_staff_routes())
         .nest("/users", users_staff_routes())
         .nest("/stages", stages_staff_routes())
@@ -108,8 +110,12 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/documents", documents_staff_routes())
         .nest("/payments", payments_staff_routes())
         .nest("/document-approvals", document_approvals_staff_routes())
-        .nest("/document-versions", document_versions_staff_routes())
-        .nest("/photos", photos_staff_routes())
+        .nest(
+            "/document-versions",
+            document_versions_staff_routes(&rate_limits),
+        )
+        .nest("/photos", photos_staff_routes(&rate_limits))
+        .nest("/invitations", invitations_staff_routes(&rate_limits))
         .layer(middleware::from_fn(require_staff))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 
@@ -127,7 +133,11 @@ pub fn create_router(state: AppState) -> Router {
     Router::new()
         .nest(
             "/api/v1",
-            public.merge(authenticated_routes).merge(staff).merge(admin),
+            public
+                .merge(authenticated_routes)
+                .merge(staff)
+                .merge(admin)
+                .layer(rate_limits.general.clone()),
         )
         .layer(middleware::from_fn(log_security_events))
         .layer(cors)
