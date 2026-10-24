@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::stages::{
         dtos::{CreateStageRequestDto, ReorderStagesRequestDto},
         models::Stage,
@@ -41,7 +42,11 @@ impl Repository {
         .map_err(|_| AppError::Database("Falha ao buscar estágio nos dados.".to_string()))
     }
 
-    pub async fn create(pool: &PgPool, dto: &CreateStageRequestDto) -> AppResult<Stage> {
+    pub async fn create(
+        pool: &PgPool,
+        dto: &CreateStageRequestDto,
+        created_by: Uuid,
+    ) -> AppResult<Stage> {
         let mut transaction = pool.begin().await.map_err(|_| {
             AppError::Database("Falha ao iniciar criação de imagem do projeto".to_string())
         })?;
@@ -60,7 +65,7 @@ impl Repository {
                 "order",
                 status,
                 start_date,
-                end_date,
+                end_date
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
@@ -78,6 +83,16 @@ impl Repository {
         .fetch_one(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao criar estágio nos dados.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            created_by,
+            "stage.created",
+            "stage",
+            stage.id,
+            None,
+        )
+        .await?;
 
         transaction.commit().await.map_err(|_| {
             AppError::Database("Falha ao concluir criação do estágio do projeto.".to_string())
@@ -108,14 +123,20 @@ impl Repository {
         })
     }
 
-    pub async fn delete(pool: &PgPool, id: Uuid, project_id: Uuid, order: i16) -> AppResult<()> {
+    pub async fn delete(
+        pool: &PgPool,
+        id: Uuid,
+        project_id: Uuid,
+        order: i16,
+        deleted_by: Uuid,
+    ) -> AppResult<()> {
         let mut transaction = pool.begin().await.map_err(|_| {
             AppError::Database("Falha ao iniciar deleção de estágio do projeto.".to_string())
         })?;
 
         let result = sqlx::query(
             r#"
-                DELETE FROM project_images
+                DELETE FROM stages
                 WHERE id = $1
                   AND project_id = $2
             "#,
@@ -133,6 +154,16 @@ impl Repository {
                 "Estágio do projeto não encontrado.".to_string(),
             ));
         }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "stage.deleted",
+            "stage",
+            id,
+            None,
+        )
+        .await?;
 
         ordering::shift_after_delete(&mut transaction, OrderingTable::Stages, project_id, order)
             .await?;

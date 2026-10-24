@@ -27,6 +27,7 @@ impl Service {
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateUserRequestDto,
+        updated_by: Uuid,
     ) -> AppResult<User> {
         if let Some(phone) = &dto.phone {
             if let Some(existing_user) = Repository::find_by_phone(pool, phone).await? {
@@ -48,12 +49,12 @@ impl Service {
             }
         }
 
-        Repository::update(pool, id, dto)
+        Repository::update(pool, id, dto, updated_by)
             .await?
             .ok_or_else(|| AppError::NotFound("Usuário não encontrado.".to_string()))
     }
 
-    pub async fn delete_user(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        Repository::delete(pool, id).await
+    pub async fn delete_user(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        Repository::delete(pool, id, deleted_by).await
     }
 }

@@ -78,8 +78,12 @@ impl Handler {
         ))
     }
 
-    pub async fn delete_task(State(state): State<AppState>, Path(id): Path<Uuid>) -> ApiResult<()> {
-        Service::delete_task(&state.pool, id).await?;
+    pub async fn delete_task(
+        State(state): State<AppState>,
+        AuthUser { id: deleted_by, .. }: AuthUser,
+        Path(id): Path<Uuid>,
+    ) -> ApiResult<()> {
+        Service::delete_task(&state.pool, id, deleted_by).await?;
 
         Ok((
             StatusCode::OK,

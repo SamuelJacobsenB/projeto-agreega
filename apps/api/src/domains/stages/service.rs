@@ -43,9 +43,13 @@ impl Service {
         Ok(stage)
     }
 
-    pub async fn create_stage(pool: &PgPool, dto: &CreateStageRequestDto) -> AppResult<Stage> {
+    pub async fn create_stage(
+        pool: &PgPool,
+        dto: &CreateStageRequestDto,
+        created_by: Uuid,
+    ) -> AppResult<Stage> {
         ProjectService::get_project_by_id(pool, dto.project_id).await?;
-        Repository::create(pool, dto).await
+        Repository::create(pool, dto, created_by).await
     }
 
     pub async fn reorder_stages(
@@ -75,10 +79,10 @@ impl Service {
         Repository::reorder(pool, project_id, dto).await
     }
 
-    pub async fn delete_stage(pool: &PgPool, id: Uuid) -> AppResult<()> {
+    pub async fn delete_stage(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
         let stage = Repository::find_by_id(pool, id)
             .await?
             .ok_or_else(|| AppError::NotFound("Estágio não encontrado.".to_string()))?;
-        Repository::delete(pool, id, stage.project_id, stage.order).await
+        Repository::delete(pool, id, stage.project_id, stage.order, deleted_by).await
     }
 }

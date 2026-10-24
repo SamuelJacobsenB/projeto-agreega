@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     domains::{
+        audit::repository::Repository as AuditRepository,
         invitations::{dtos::CreateInvitationRequestDto, models::Invitation},
         users::models::User,
     },
@@ -119,6 +120,16 @@ impl Repository {
         .await
         .map_err(|_| AppError::Database("Falha ao criar convite no banco de dados.".to_string()))?;
 
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            invited_by,
+            "invitation.created",
+            "invitation",
+            invitation.id,
+            None,
+        )
+        .await?;
+
         transaction
             .commit()
             .await
@@ -202,6 +213,16 @@ impl Repository {
         .await
         .map_err(|_| AppError::Database("Falha ao consumir convite nos dados.".to_string()))?;
 
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            user.id,
+            "invitation.accepted",
+            "invitation",
+            invitation.id,
+            None,
+        )
+        .await?;
+
         transaction
             .commit()
             .await
@@ -210,16 +231,35 @@ impl Repository {
         Ok(user)
     }
 
-    pub async fn delete_invitation(pool: &PgPool, id: Uuid) -> AppResult<()> {
+    pub async fn delete_invitation(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        let mut transaction = pool
+            .begin()
+            .await
+            .map_err(|_| AppError::Database("Falha ao iniciar exclusão de convite.".to_string()))?;
+
         let result = sqlx::query("DELETE FROM invitations WHERE id = $1")
             .bind(id)
-            .execute(pool)
+            .execute(&mut *transaction)
             .await
             .map_err(|_| AppError::Database("Falha ao deletar convite dos dados.".to_string()))?;
 
         if result.rows_affected() == 0 {
             return Err(AppError::NotFound("Convite não encontrado.".to_string()));
         }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "invitation.deleted",
+            "invitation",
+            id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar exclusão de convite.".to_string())
+        })?;
 
         Ok(())
     }

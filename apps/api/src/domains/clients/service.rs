@@ -29,7 +29,11 @@ impl Service {
             .ok_or_else(|| AppError::NotFound("Cliente não encontrado.".to_string()))
     }
 
-    pub async fn create_client(pool: &PgPool, dto: &CreateClientRequestDto) -> AppResult<Client> {
+    pub async fn create_client(
+        pool: &PgPool,
+        dto: &CreateClientRequestDto,
+        created_by: Uuid,
+    ) -> AppResult<Client> {
         if let Some(cnpj) = &dto.cnpj {
             if Repository::exists_by_cnpj(pool, cnpj, None).await? {
                 return Err(AppError::Conflict(
@@ -46,13 +50,14 @@ impl Service {
             }
         }
 
-        Repository::create(pool, dto).await
+        Repository::create(pool, dto, created_by).await
     }
 
     pub async fn update_client(
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateClientRequestDto,
+        updated_by: Uuid,
     ) -> AppResult<Client> {
         if let Some(cnpj) = &dto.cnpj {
             if Repository::exists_by_cnpj(pool, cnpj, Some(id)).await? {
@@ -70,10 +75,10 @@ impl Service {
             }
         }
 
-        Repository::update(pool, id, dto).await
+        Repository::update(pool, id, dto, updated_by).await
     }
 
-    pub async fn delete_client(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        Repository::delete(pool, id).await
+    pub async fn delete_client(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        Repository::delete(pool, id, deleted_by).await
     }
 }

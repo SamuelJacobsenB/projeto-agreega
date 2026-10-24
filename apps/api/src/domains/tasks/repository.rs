@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::tasks::{
         dtos::{CreateTaskRequestDto, ReorderTasksRequestDto},
         models::Task,
@@ -41,7 +42,11 @@ impl Repository {
         .map_err(|_| AppError::Database("Falha ao buscar tarefa nos dados.".to_string()))
     }
 
-    pub async fn create(pool: &PgPool, dto: &CreateTaskRequestDto) -> AppResult<Task> {
+    pub async fn create(
+        pool: &PgPool,
+        dto: &CreateTaskRequestDto,
+        created_by: Uuid,
+    ) -> AppResult<Task> {
         let mut transaction = pool.begin().await.map_err(|_| {
             AppError::Database("Falha ao iniciar criação de tarefa do projeto".to_string())
         })?;
@@ -61,9 +66,9 @@ impl Repository {
                 "order",
                 status,
                 assigned_to,
-                due_date,
+                due_date
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
             "#,
         )
@@ -80,6 +85,16 @@ impl Repository {
         .fetch_one(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao criar tarefa nos dados.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            created_by,
+            "task.created",
+            "task",
+            stage.id,
+            None,
+        )
+        .await?;
 
         transaction.commit().await.map_err(|_| {
             AppError::Database("Falha ao concluir criação da tarefa do estágio.".to_string())
@@ -104,7 +119,13 @@ impl Repository {
         })
     }
 
-    pub async fn delete(pool: &PgPool, id: Uuid, stage_id: Uuid, order: i16) -> AppResult<()> {
+    pub async fn delete(
+        pool: &PgPool,
+        id: Uuid,
+        stage_id: Uuid,
+        order: i16,
+        deleted_by: Uuid,
+    ) -> AppResult<()> {
         let mut transaction = pool.begin().await.map_err(|_| {
             AppError::Database("Falha ao iniciar deleção de tarefas do estágio.".to_string())
         })?;
@@ -129,6 +150,16 @@ impl Repository {
                 "Tarefa do estágio não encontrado.".to_string(),
             ));
         }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "task.deleted",
+            "task",
+            id,
+            None,
+        )
+        .await?;
 
         ordering::shift_after_delete(&mut transaction, OrderingTable::Tasks, stage_id, order)
             .await?;

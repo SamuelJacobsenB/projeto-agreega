@@ -27,21 +27,23 @@ impl Service {
     pub async fn create_project(
         pool: &PgPool,
         dto: &CreateProjectRequestDto,
+        user_id: Uuid,
     ) -> AppResult<Project> {
         ClientService::get_client_by_id(pool, dto.client_id).await?;
 
-        Repository::create(pool, dto).await
+        Repository::create(pool, dto, user_id).await
     }
 
     pub async fn update_project(
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateProjectRequestDto,
+        user_id: Uuid,
     ) -> AppResult<Project> {
-        Repository::update(pool, id, dto).await
+        Repository::update(pool, id, dto, user_id).await
     }
 
-    pub async fn delete_project(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        Repository::delete(pool, id).await
+    pub async fn delete_project(pool: &PgPool, id: Uuid, user_id: Uuid) -> AppResult<()> {
+        Repository::delete(pool, id, user_id).await
     }
 }

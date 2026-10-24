@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::document_versions::models::DocumentVersion,
     response::{AppError, AppResult},
 };
@@ -90,6 +91,16 @@ impl Repository {
             .map_err(|_| {
                 AppError::Database("Falha ao atualizar versão atual do documento.".to_string())
             })?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            uploaded_by,
+            "document.version_uploaded",
+            "document",
+            document_id,
+            None,
+        )
+        .await?;
 
         transaction
             .commit()

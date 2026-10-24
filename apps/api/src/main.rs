@@ -5,10 +5,19 @@ use agreega_api::{
     config::Config,
     infrastructure::{db::connection::create_pool, email::EmailService},
 };
+use tracing::Level;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
+
+    let (log_writer, _log_guard) = tracing_appender::non_blocking(std::io::stderr());
+    tracing_subscriber::fmt()
+        .with_writer(log_writer)
+        .with_ansi(false)
+        .with_max_level(Level::INFO)
+        .try_init()
+        .map_err(|error| std::io::Error::other(error.to_string()))?;
 
     let config = Config::from_env()?;
     let port = config.port;
@@ -28,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let address = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(address).await?;
 
-    println!("... Agreega API initialized ...");
+    tracing::info!(port, "Agreega API initialized");
 
     axum::serve(listener, app).await?;
 

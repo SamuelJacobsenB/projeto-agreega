@@ -34,7 +34,7 @@ impl Service {
         role: UserRole,
     ) -> AppResult<Payment> {
         authorize_project_access(pool, dto.project_id, user_id, role).await?;
-        Repository::create(pool, dto).await
+        Repository::create(pool, dto, user_id).await
     }
 
     pub async fn update(
@@ -72,6 +72,13 @@ impl Service {
             ));
         }
 
-        Repository::update(pool, id, dto).await
+        let audit_action =
+            if payment.status != PaymentStatus::Paid && dto.status == Some(PaymentStatus::Paid) {
+                "payment.marked_paid"
+            } else {
+                "payment.updated"
+            };
+
+        Repository::update(pool, id, dto, user_id, audit_action).await
     }
 }

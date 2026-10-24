@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     domains::{
+        audit::repository::Repository as AuditRepository,
         auth::models::{PasswordResetToken, RefreshSession},
         users::models::User,
     },
@@ -266,6 +267,16 @@ impl Repository {
         .execute(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao encerrar sessões do usuário.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            token.user_id,
+            "user.password_reset",
+            "user",
+            token.user_id,
+            None,
+        )
+        .await?;
 
         transaction.commit().await.map_err(|_| {
             AppError::Database("Falha ao concluir redefinição de senha.".to_string())

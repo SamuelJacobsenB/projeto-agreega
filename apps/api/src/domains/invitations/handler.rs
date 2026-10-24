@@ -64,9 +64,10 @@ impl Handler {
 
     pub async fn delete_invitation(
         State(state): State<AppState>,
+        AuthUser { id: deleted_by, .. }: AuthUser,
         Path(id): Path<Uuid>,
     ) -> ApiResult<()> {
-        Service::delete_invitation(&state.pool, id).await?;
+        Service::delete_invitation(&state.pool, id, deleted_by).await?;
 
         Ok((
             StatusCode::OK,

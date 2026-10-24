@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::projects::{
         dtos::{CreateProjectRequestDto, UpdateProjectRequestDto},
         models::Project,
@@ -33,8 +34,17 @@ impl Repository {
         .map_err(|_| AppError::Database("Falha ao buscar projeto nos dados.".to_string()))
     }
 
-    pub async fn create(pool: &PgPool, dto: &CreateProjectRequestDto) -> AppResult<Project> {
-        sqlx::query_as::<_, Project>(
+    pub async fn create(
+        pool: &PgPool,
+        dto: &CreateProjectRequestDto,
+        created_by: Uuid,
+    ) -> AppResult<Project> {
+        let mut transaction = pool
+            .begin()
+            .await
+            .map_err(|_| AppError::Database("Falha ao iniciar criação do projeto.".to_string()))?;
+
+        let project = sqlx::query_as::<_, Project>(
             r#"
             INSERT INTO projects (
                 id,
@@ -66,17 +76,38 @@ impl Repository {
         .bind(dto.start_date)
         .bind(dto.estimated_end_date)
         .bind(dto.cover_file_id)
-        .fetch_one(pool)
+        .fetch_one(&mut *transaction)
         .await
-        .map_err(|_| AppError::Database("Falha ao criar projeto nos dados.".to_string()))
+        .map_err(|_| AppError::Database("Falha ao criar projeto nos dados.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            created_by,
+            "project.created",
+            "project",
+            project.id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar criação do projeto.".to_string())
+        })?;
+
+        Ok(project)
     }
 
     pub async fn update(
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateProjectRequestDto,
+        updated_by: Uuid,
     ) -> AppResult<Project> {
-        sqlx::query_as::<_, Project>(
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar atualização do projeto.".to_string())
+        })?;
+
+        let project = sqlx::query_as::<_, Project>(
             r#"
             UPDATE projects
             SET name = $1,
@@ -105,27 +136,57 @@ impl Repository {
         .bind(dto.estimated_end_date)
         .bind(dto.cover_file_id)
         .bind(id)
-        .fetch_optional(pool)
+        .fetch_optional(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao atualizar projeto nos dados.".to_string()))?
-        .ok_or_else(|| AppError::NotFound("Projeto não encontrado.".to_string()))
+        .ok_or_else(|| AppError::NotFound("Projeto não encontrado.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            updated_by,
+            "project.updated",
+            "project",
+            project.id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar atualização do projeto.".to_string())
+        })?;
+
+        Ok(project)
     }
 
-    pub async fn delete(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        let result = sqlx::query!(
-            r#"
-            DELETE FROM projects
-            WHERE id = $1
-            "#,
-            id
-        )
-        .execute(pool)
-        .await
-        .map_err(|_| AppError::Database("Falha ao excluir projeto dos dados.".to_string()))?;
+    pub async fn delete(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        let mut transaction = pool
+            .begin()
+            .await
+            .map_err(|_| AppError::Database("Falha ao iniciar exclusão do projeto.".to_string()))?;
+
+        let result = sqlx::query("DELETE FROM projects WHERE id = $1")
+            .bind(id)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|_| AppError::Database("Falha ao excluir projeto dos dados.".to_string()))?;
 
         if result.rows_affected() == 0 {
             return Err(AppError::NotFound("Projeto não encontrado.".to_string()));
         }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "project.deleted",
+            "project",
+            id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar exclusão do projeto.".to_string())
+        })?;
 
         Ok(())
     }

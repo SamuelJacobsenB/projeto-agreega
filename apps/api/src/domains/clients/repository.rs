@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::clients::{
         dtos::{CreateClientRequestDto, UpdateClientRequestDto},
         models::Client,
@@ -108,8 +109,17 @@ impl Repository {
         .map_err(|_| AppError::Database("Falha ao buscar cliente do usuário.".to_string()))
     }
 
-    pub async fn create(pool: &PgPool, dto: &CreateClientRequestDto) -> AppResult<Client> {
-        sqlx::query_as!(
+    pub async fn create(
+        pool: &PgPool,
+        dto: &CreateClientRequestDto,
+        created_by: Uuid,
+    ) -> AppResult<Client> {
+        let mut transaction = pool
+            .begin()
+            .await
+            .map_err(|_| AppError::Database("Falha ao iniciar criação do cliente.".to_string()))?;
+
+        let client = sqlx::query_as!(
             Client,
             r#"
             INSERT INTO clients (id, company_name, cnpj, phone, email, address, city, state)
@@ -125,17 +135,38 @@ impl Repository {
             dto.city,
             dto.state
         )
-        .fetch_one(pool)
+        .fetch_one(&mut *transaction)
         .await
-        .map_err(|_| AppError::Database("Falha ao criar cliente nos dados.".to_string()))
+        .map_err(|_| AppError::Database("Falha ao criar cliente nos dados.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            created_by,
+            "client.created",
+            "client",
+            client.id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar criação do cliente.".to_string())
+        })?;
+
+        Ok(client)
     }
 
     pub async fn update(
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateClientRequestDto,
+        updated_by: Uuid,
     ) -> AppResult<Client> {
-        sqlx::query_as!(
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar atualização do cliente.".to_string())
+        })?;
+
+        let client = sqlx::query_as!(
             Client,
             r#"
             UPDATE clients
@@ -159,13 +190,34 @@ impl Repository {
             dto.state,
             id
         )
-        .fetch_optional(pool)
+        .fetch_optional(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao atualizar cliente nos dados.".to_string()))?
-        .ok_or_else(|| AppError::NotFound("Cliente não encontrado.".to_string()))
+        .ok_or_else(|| AppError::NotFound("Cliente não encontrado.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            updated_by,
+            "client.updated",
+            "client",
+            client.id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar atualização do cliente.".to_string())
+        })?;
+
+        Ok(client)
     }
 
-    pub async fn delete(pool: &PgPool, id: Uuid) -> AppResult<()> {
+    pub async fn delete(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        let mut transaction = pool
+            .begin()
+            .await
+            .map_err(|_| AppError::Database("Falha ao iniciar exclusão do cliente.".to_string()))?;
+
         let result = sqlx::query!(
             r#"
             DELETE FROM clients
@@ -173,13 +225,27 @@ impl Repository {
             "#,
             id
         )
-        .execute(pool)
+        .execute(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao deletar cliente dos dados.".to_string()))?;
 
         if result.rows_affected() == 0 {
             return Err(AppError::NotFound("Cliente não encontrado.".to_string()));
         }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "client.deleted",
+            "client",
+            id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar exclusão do cliente.".to_string())
+        })?;
 
         Ok(())
     }

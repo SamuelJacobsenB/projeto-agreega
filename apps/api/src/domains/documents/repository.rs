@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::documents::{
         dtos::{CreateDocumentRequestDto, UpdateDocumentRequestDto},
         models::Document,
@@ -41,7 +42,11 @@ impl Repository {
         dto: &CreateDocumentRequestDto,
         created_by: Uuid,
     ) -> AppResult<Document> {
-        sqlx::query_as::<_, Document>(
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar criação do documento.".to_string())
+        })?;
+
+        let document = sqlx::query_as::<_, Document>(
             r#"
 				INSERT INTO documents (
 					id,
@@ -66,17 +71,38 @@ impl Repository {
         .bind(dto.document_type)
         .bind(dto.status)
         .bind(created_by)
-        .fetch_one(pool)
+        .fetch_one(&mut *transaction)
         .await
-        .map_err(|_| AppError::Database("Falha ao registrar documento.".to_string()))
+        .map_err(|_| AppError::Database("Falha ao registrar documento.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            created_by,
+            "document.created",
+            "document",
+            document.id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar criação do documento.".to_string())
+        })?;
+
+        Ok(document)
     }
 
     pub async fn update(
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateDocumentRequestDto,
+        updated_by: Uuid,
     ) -> AppResult<Document> {
-        sqlx::query_as::<_, Document>(
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar atualização do documento.".to_string())
+        })?;
+
+        let document = sqlx::query_as::<_, Document>(
             r#"
                 UPDATE documents
                 SET name = COALESCE($2, name),
@@ -91,22 +117,56 @@ impl Repository {
         .bind(&dto.name)
         .bind(dto.document_type)
         .bind(dto.status)
-        .fetch_optional(pool)
+        .fetch_optional(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao atualizar documento nos dados.".to_string()))?
-        .ok_or_else(|| AppError::NotFound("Documento não encontrado.".to_string()))
+        .ok_or_else(|| AppError::NotFound("Documento não encontrado.".to_string()))?;
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            updated_by,
+            "document.updated",
+            "document",
+            document.id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar atualização do documento.".to_string())
+        })?;
+
+        Ok(document)
     }
 
-    pub async fn delete(pool: &PgPool, id: Uuid) -> AppResult<()> {
+    pub async fn delete(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar exclusão do documento.".to_string())
+        })?;
+
         let result = sqlx::query("DELETE FROM documents WHERE id = $1")
             .bind(id)
-            .execute(pool)
+            .execute(&mut *transaction)
             .await
             .map_err(|_| AppError::Database("Falha ao excluir documento dos dados.".to_string()))?;
 
         if result.rows_affected() == 0 {
             return Err(AppError::NotFound("Documento não encontrado.".to_string()));
         }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "document.deleted",
+            "document",
+            id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar exclusão do documento.".to_string())
+        })?;
 
         Ok(())
     }

@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    domains::audit::repository::Repository as AuditRepository,
     domains::users::{dtos::UpdateUserRequestDto, models::User},
     response::{AppError, AppResult},
 };
@@ -80,8 +81,13 @@ impl Repository {
         pool: &PgPool,
         id: Uuid,
         dto: &UpdateUserRequestDto,
+        updated_by: Uuid,
     ) -> AppResult<Option<User>> {
-        sqlx::query_as::<_, User>(
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar atualização do usuário.".to_string())
+        })?;
+
+        let user = sqlx::query_as::<_, User>(
             r#"
                 UPDATE users
                 SET name = $1, phone = $2, cpf = $3
@@ -93,22 +99,58 @@ impl Repository {
         .bind(&dto.phone)
         .bind(&dto.cpf)
         .bind(id)
-        .fetch_optional(pool)
+        .fetch_optional(&mut *transaction)
         .await
-        .map_err(|_| AppError::Database("Falha ao atualizar usuário nos dados".to_string()))
+        .map_err(|_| AppError::Database("Falha ao atualizar usuário nos dados".to_string()))?;
+
+        if user.is_some() {
+            AuditRepository::create_in_transaction(
+                &mut transaction,
+                updated_by,
+                "user.updated",
+                "user",
+                id,
+                None,
+            )
+            .await?;
+        }
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar atualização do usuário.".to_string())
+        })?;
+
+        Ok(user)
     }
 
-    pub async fn delete(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        sqlx::query(
-            r#"
-                DELETE FROM users
-                WHERE id = $1
-            "#,
+    pub async fn delete(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        let mut transaction = pool
+            .begin()
+            .await
+            .map_err(|_| AppError::Database("Falha ao iniciar exclusão do usuário.".to_string()))?;
+
+        let result = sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(id)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|_| AppError::Database("Falha ao deletar usuário nos dados".to_string()))?;
+
+        if result.rows_affected() == 0 {
+            return Err(AppError::NotFound("Usuário não encontrado.".to_string()));
+        }
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            deleted_by,
+            "user.deleted",
+            "user",
+            id,
+            None,
         )
-        .bind(id)
-        .execute(pool)
-        .await
-        .map_err(|_| AppError::Database("Falha ao deletar usuário nos dados".to_string()))?;
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar exclusão do usuário.".to_string())
+        })?;
 
         Ok(())
     }

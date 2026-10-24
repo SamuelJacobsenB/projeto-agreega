@@ -1,7 +1,10 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::response::{AppError, AppResult};
+use crate::{
+    domains::audit::repository::Repository as AuditRepository,
+    response::{AppError, AppResult},
+};
 
 use super::models::{ApprovalStatus, DocumentApproval};
 
@@ -85,6 +88,16 @@ impl Repository {
         .await
         .map_err(|_| AppError::Database("Falha ao criar solicitação de aprovação.".to_string()))?;
 
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            requested_by,
+            "document.approval_requested",
+            "document",
+            document_id,
+            None,
+        )
+        .await?;
+
         transaction.commit().await.map_err(|_| {
             AppError::Database("Falha ao confirmar solicitação de aprovação.".to_string())
         })?;
@@ -99,6 +112,10 @@ impl Repository {
         status: ApprovalStatus,
         comment: Option<&str>,
     ) -> AppResult<DocumentApproval> {
+        let mut transaction = pool.begin().await.map_err(|_| {
+            AppError::Database("Falha ao iniciar revisão da aprovação.".to_string())
+        })?;
+
         let approval = sqlx::query_as::<_, DocumentApproval>(
             r#"
 				UPDATE document_approvals
@@ -111,10 +128,33 @@ impl Repository {
         .bind(status)
         .bind(reviewed_by)
         .bind(comment)
-        .fetch_optional(pool)
+        .fetch_optional(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao registrar revisão da aprovação.".to_string()))?;
 
-        approval.ok_or_else(|| AppError::Conflict("Esta aprovação já foi revisada.".to_string()))
+        let approval = approval
+            .ok_or_else(|| AppError::Conflict("Esta aprovação já foi revisada.".to_string()))?;
+        let action = match status {
+            ApprovalStatus::Approved => "document.approval_approved",
+            ApprovalStatus::ChangesRequested => "document.approval_changes_requested",
+            ApprovalStatus::Rejected => "document.approval_rejected",
+            ApprovalStatus::Pending => unreachable!(),
+        };
+
+        AuditRepository::create_in_transaction(
+            &mut transaction,
+            reviewed_by,
+            action,
+            "document",
+            approval.document_id,
+            None,
+        )
+        .await?;
+
+        transaction.commit().await.map_err(|_| {
+            AppError::Database("Falha ao confirmar revisão da aprovação.".to_string())
+        })?;
+
+        Ok(approval)
     }
 }

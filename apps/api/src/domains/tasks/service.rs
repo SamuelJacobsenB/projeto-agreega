@@ -49,7 +49,7 @@ impl Service {
         role: UserRole,
     ) -> AppResult<Task> {
         StageService::get_stage_by_id(pool, dto.stage_id, user_id, role).await?;
-        Repository::create(pool, dto).await
+        Repository::create(pool, dto, user_id).await
     }
 
     pub async fn reorder_tasks(
@@ -81,10 +81,10 @@ impl Service {
         Repository::reorder(pool, stage_id, dto).await
     }
 
-    pub async fn delete_task(pool: &PgPool, id: Uuid) -> AppResult<()> {
+    pub async fn delete_task(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
         let task = Repository::find_by_id(pool, id)
             .await?
             .ok_or_else(|| AppError::NotFound("Tarefa não encontrada.".to_string()))?;
-        Repository::delete(pool, id, task.stage_id, task.order).await
+        Repository::delete(pool, id, task.stage_id, task.order, deleted_by).await
     }
 }

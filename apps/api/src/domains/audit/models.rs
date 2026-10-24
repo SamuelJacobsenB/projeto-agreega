@@ -5,6 +5,7 @@ use uuid::Uuid;
 /// Representa um registro de uma ação realizada no sistema.
 /// Conecta-se a User e à entidade afetada pela ação.
 /// Usado para manter histórico, rastreabilidade e segurança das operações importantes.
+#[derive(sqlx::FromRow)]
 pub struct AuditLog {
     pub id: Uuid,
 

@@ -58,8 +58,8 @@ impl Service {
             .await
     }
 
-    pub async fn delete_invitation(pool: &PgPool, id: Uuid) -> AppResult<()> {
-        Repository::delete_invitation(pool, id).await
+    pub async fn delete_invitation(pool: &PgPool, id: Uuid, deleted_by: Uuid) -> AppResult<()> {
+        Repository::delete_invitation(pool, id, deleted_by).await
     }
 
     async fn ensure_email_available(pool: &PgPool, email: &str) -> AppResult<()> {

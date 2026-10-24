@@ -50,9 +50,10 @@ impl Handler {
 
     pub async fn create_stage(
         State(state): State<AppState>,
+        AuthUser { id: created_by, .. }: AuthUser,
         ValidatedJson(dto): ValidatedJson<CreateStageRequestDto>,
     ) -> ApiResult<StageResponseDto> {
-        let stage = Service::create_stage(&state.pool, &dto).await?;
+        let stage = Service::create_stage(&state.pool, &dto, created_by).await?;
 
         Ok((
             StatusCode::CREATED,
@@ -78,9 +79,10 @@ impl Handler {
 
     pub async fn delete_stage(
         State(state): State<AppState>,
+        AuthUser { id: deleted_by, .. }: AuthUser,
         Path(id): Path<Uuid>,
     ) -> ApiResult<()> {
-        Service::delete_stage(&state.pool, id).await?;
+        Service::delete_stage(&state.pool, id, deleted_by).await?;
 
         Ok((
             StatusCode::OK,

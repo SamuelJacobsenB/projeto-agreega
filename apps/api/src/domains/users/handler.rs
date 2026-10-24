@@ -73,10 +73,11 @@ impl Handler {
 
     pub async fn update_user(
         State(state): State<AppState>,
+        AuthUser { id: updated_by, .. }: AuthUser,
         Path(id): Path<Uuid>,
         ValidatedJson(dto): ValidatedJson<UpdateUserRequestDto>,
     ) -> ApiResult<UserResponseDto> {
-        let user = Service::update_user(&state.pool, id, &dto).await?;
+        let user = Service::update_user(&state.pool, id, &dto, updated_by).await?;
 
         Ok((
             StatusCode::OK,
@@ -87,8 +88,12 @@ impl Handler {
         ))
     }
 
-    pub async fn delete_user(State(state): State<AppState>, Path(id): Path<Uuid>) -> ApiResult<()> {
-        Service::delete_user(&state.pool, id).await?;
+    pub async fn delete_user(
+        State(state): State<AppState>,
+        AuthUser { id: deleted_by, .. }: AuthUser,
+        Path(id): Path<Uuid>,
+    ) -> ApiResult<()> {
+        Service::delete_user(&state.pool, id, deleted_by).await?;
 
         Ok((
             StatusCode::OK,

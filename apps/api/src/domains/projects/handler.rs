@@ -11,6 +11,7 @@ use crate::{
         service::Service,
     },
     response::{ApiResponse, ApiResult, ValidatedJson},
+    security::auth_user::AuthUser,
 };
 
 pub struct Handler;
@@ -46,9 +47,10 @@ impl Handler {
 
     pub async fn create_project(
         State(state): State<AppState>,
+        AuthUser { id: user_id, .. }: AuthUser,
         ValidatedJson(dto): ValidatedJson<CreateProjectRequestDto>,
     ) -> ApiResult<ProjectResponseDto> {
-        let project = Service::create_project(&state.pool, &dto).await?;
+        let project = Service::create_project(&state.pool, &dto, user_id).await?;
 
         Ok((
             StatusCode::CREATED,
@@ -61,10 +63,11 @@ impl Handler {
 
     pub async fn update_project(
         State(state): State<AppState>,
+        AuthUser { id: user_id, .. }: AuthUser,
         Path(id): Path<Uuid>,
         ValidatedJson(dto): ValidatedJson<UpdateProjectRequestDto>,
     ) -> ApiResult<ProjectResponseDto> {
-        let project = Service::update_project(&state.pool, id, &dto).await?;
+        let project = Service::update_project(&state.pool, id, &dto, user_id).await?;
 
         Ok((
             StatusCode::OK,
@@ -77,9 +80,10 @@ impl Handler {
 
     pub async fn delete_project(
         State(state): State<AppState>,
+        AuthUser { id: user_id, .. }: AuthUser,
         Path(id): Path<Uuid>,
     ) -> ApiResult<()> {
-        Service::delete_project(&state.pool, id).await?;
+        Service::delete_project(&state.pool, id, user_id).await?;
 
         Ok((
             StatusCode::OK,

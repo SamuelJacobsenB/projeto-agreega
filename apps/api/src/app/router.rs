@@ -3,6 +3,7 @@ use axum::{Router, middleware};
 use crate::{
     app::AppState,
     domains::{
+        audit::routes::admin_routes as audit_admin_routes,
         auth::routes::{
             authenticated_routes as auth_authenticated_routes, public_routes as auth_public_routes,
         },
@@ -56,7 +57,11 @@ use crate::{
             authenticated_routes as users_authenticated_routes, staff_routes as users_staff_routes,
         },
     },
-    middlewares::auth::{require_admin, require_auth, require_staff},
+    middlewares::{
+        auth::{require_admin, require_auth, require_staff},
+        cors::cors_layer,
+        logging::log_security_events,
+    },
 };
 
 pub fn create_router(state: AppState) -> Router {
@@ -109,13 +114,22 @@ pub fn create_router(state: AppState) -> Router {
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 
     let admin = Router::new()
+        .nest("/audit-logs", audit_admin_routes())
         .layer(middleware::from_fn(require_admin))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
+
+    let cors = cors_layer([
+        state.config.website_url.as_str(),
+        state.config.app_url.as_str(),
+    ])
+    .expect("Failed to configure CORS.");
 
     Router::new()
         .nest(
             "/api/v1",
             public.merge(authenticated_routes).merge(staff).merge(admin),
         )
+        .layer(middleware::from_fn(log_security_events))
+        .layer(cors)
         .with_state(state)
 }

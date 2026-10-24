@@ -92,7 +92,7 @@ impl Service {
             ));
         }
 
-        Repository::update(pool, id, dto).await
+        Repository::update(pool, id, dto, user_id).await
     }
 
     pub async fn delete_document(
@@ -102,6 +102,6 @@ impl Service {
         role: UserRole,
     ) -> AppResult<()> {
         Self::get_document_by_id(pool, id, user_id, role).await?;
-        Repository::delete(pool, id).await
+        Repository::delete(pool, id, user_id).await
     }
 }

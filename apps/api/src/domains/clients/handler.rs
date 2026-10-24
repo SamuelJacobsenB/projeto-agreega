@@ -54,9 +54,10 @@ impl Handler {
 
     pub async fn create_client(
         State(state): State<AppState>,
+        AuthUser { id: created_by, .. }: AuthUser,
         ValidatedJson(dto): ValidatedJson<CreateClientRequestDto>,
     ) -> ApiResult<ClientResponseDto> {
-        let client = Service::create_client(&state.pool, &dto).await?;
+        let client = Service::create_client(&state.pool, &dto, created_by).await?;
 
         Ok((
             StatusCode::CREATED,
@@ -69,10 +70,11 @@ impl Handler {
 
     pub async fn update_client(
         State(state): State<AppState>,
+        AuthUser { id: updated_by, .. }: AuthUser,
         Path(id): Path<Uuid>,
         ValidatedJson(dto): ValidatedJson<UpdateClientRequestDto>,
     ) -> ApiResult<ClientResponseDto> {
-        let client = Service::update_client(&state.pool, id, &dto).await?;
+        let client = Service::update_client(&state.pool, id, &dto, updated_by).await?;
 
         Ok((
             StatusCode::OK,
@@ -85,9 +87,10 @@ impl Handler {
 
     pub async fn delete_client(
         State(state): State<AppState>,
+        AuthUser { id: deleted_by, .. }: AuthUser,
         Path(id): Path<Uuid>,
     ) -> ApiResult<()> {
-        Service::delete_client(&state.pool, id).await?;
+        Service::delete_client(&state.pool, id, deleted_by).await?;
 
         Ok((
             StatusCode::OK,
