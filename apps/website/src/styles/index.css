@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: "Inter Variable", sans-serif;
+  --color-gray: rgb(220, 220, 220);
+  --color-light-black: rgb(30, 30, 30);
+  --color-light-yellow: rgb(250, 230, 130);
+}

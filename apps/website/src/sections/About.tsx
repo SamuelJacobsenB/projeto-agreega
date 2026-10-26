@@ -1,0 +1,55 @@
+export function About() {
+  return (
+    <section id="sobre" className="bg-blue-200">
+      {" "}
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+    </section>
+  );
+}

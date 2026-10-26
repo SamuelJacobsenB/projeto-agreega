@@ -1,0 +1,54 @@
+export function Contact() {
+  return (
+    <section id="contato" className="bg-green-200">
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+      <h1>Hello</h1>
+    </section>
+  );
+}
