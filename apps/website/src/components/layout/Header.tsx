@@ -60,51 +60,53 @@ export function Header() {
           : "bg-transparent"
       }`}
     >
-      <div className="flex items-center justify-between gap-6 px-6 py-4 lg:px-24">
-        <a href="#home" onClick={closeMenu}>
+      <div className="flex items-center justify-between px-6 py-4 lg:px-24">
+        <a href="#home" onClick={closeMenu} className="shrink-0">
           <img
             src="/images/logo.svg"
             alt="Agreega Engenharia e Arquitetura"
-            className="w-48 lg:w-64"
+            className="w-48 lg:w-56"
           />
         </a>
 
-        <nav className="hidden lg:block">
-          <ul className="flex items-center gap-10">
-            {routes.map(({ label, href }) => {
-              const isActive = activeSection === href;
+        <div className="hidden items-center gap-12 lg:flex">
+          <nav>
+            <ul className="flex items-center gap-8 xl:gap-10">
+              {routes.map(({ label, href }) => {
+                const isActive = activeSection === href;
 
-              return (
-                <li key={href}>
-                  <a
-                    href={href}
-                    aria-current={isActive ? "location" : undefined}
-                    className={`relative block py-2 text-lg transition-colors duration-300 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-(--color-light-yellow) after:transition-transform after:duration-300 ${
-                      isActive
-                        ? "text-white after:scale-x-100"
-                        : "text-gray-200 after:scale-x-0 hover:text-white hover:after:scale-x-100"
-                    }`}
-                  >
-                    {label}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+                return (
+                  <li key={href}>
+                    <a
+                      href={href}
+                      aria-current={isActive ? "location" : undefined}
+                      className={`relative block py-2 text-lg transition-colors duration-300 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-(--color-light-yellow) after:transition-transform after:duration-300 ${
+                        isActive
+                          ? "text-white after:scale-x-100"
+                          : "text-gray-200 after:scale-x-0 hover:text-white hover:after:scale-x-100"
+                      }`}
+                    >
+                      {label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
-        <a
-          href="https://wa.me/5527998250195"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group ml-auto hidden items-center gap-2 rounded-full border border-white px-6 py-2 text-lg text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-(--color-light-black) lg:flex"
-        >
-          Fale conosco
-          <ArrowRight
-            size={18}
-            className="transition-transform duration-300 group-hover:translate-x-1"
-          />
-        </a>
+          <a
+            href="https://wa.me/5527998250195"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-white px-6 py-2 text-lg text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-(--color-light-black)"
+          >
+            Fale conosco
+            <ArrowRight
+              size={18}
+              className="transition-transform duration-300 group-hover:translate-x-1"
+            />
+          </a>
+        </div>
 
         <button
           type="button"
