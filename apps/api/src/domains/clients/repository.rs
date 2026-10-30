@@ -18,25 +18,25 @@ impl Repository {
         cnpj: &str,
         except_id: Option<Uuid>,
     ) -> AppResult<bool> {
-        let result = sqlx::query!(
+        let result = sqlx::query_scalar::<_, bool>(
             r#"
             SELECT EXISTS(
                 SELECT 1
                 FROM clients
                 WHERE cnpj = $1
                     AND ($2::uuid IS NULL OR id <> $2)
-            ) AS "exists!"
+            )
             "#,
-            cnpj,
-            except_id
         )
+        .bind(cnpj)
+        .bind(except_id)
         .fetch_one(pool)
         .await
         .map_err(|_| {
             AppError::Database("Falha ao verificar existência de cliente nos dados.".to_string())
         })?;
 
-        Ok(result.exists)
+        Ok(result)
     }
 
     pub async fn exists_by_email(
@@ -44,34 +44,33 @@ impl Repository {
         email: &str,
         except_id: Option<Uuid>,
     ) -> AppResult<bool> {
-        let result = sqlx::query!(
+        let result = sqlx::query_scalar::<_, bool>(
             r#"
             SELECT EXISTS(
                 SELECT 1
                 FROM clients
                 WHERE email = $1
                     AND ($2::uuid IS NULL OR id <> $2)
-            ) AS "exists!"
+            )
             "#,
-            email,
-            except_id
         )
+        .bind(email)
+        .bind(except_id)
         .fetch_one(pool)
         .await
         .map_err(|_| {
             AppError::Database("Falha ao verificar existência de cliente nos dados.".to_string())
         })?;
 
-        Ok(result.exists)
+        Ok(result)
     }
 
     pub async fn find_all(pool: &PgPool) -> AppResult<Vec<Client>> {
-        sqlx::query_as!(
-            Client,
+        sqlx::query_as::<_, Client>(
             r#"
             SELECT *
             FROM clients
-            "#
+            "#,
         )
         .fetch_all(pool)
         .await
@@ -79,31 +78,29 @@ impl Repository {
     }
 
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> AppResult<Option<Client>> {
-        sqlx::query_as!(
-            Client,
+        sqlx::query_as::<_, Client>(
             r#"
             SELECT *
             FROM clients
             WHERE id = $1
             "#,
-            id
         )
+        .bind(id)
         .fetch_optional(pool)
         .await
         .map_err(|_| AppError::Database("Falha ao buscar cliente nos dados.".to_string()))
     }
 
     pub async fn find_client_by_user_id(pool: &PgPool, user_id: Uuid) -> AppResult<Option<Client>> {
-        sqlx::query_as!(
-            Client,
+        sqlx::query_as::<_, Client>(
             r#"
             SELECT c.*
             FROM users u
             JOIN clients c ON c.id = u.client_id
             WHERE u.id = $1
-        "#,
-            user_id
+            "#,
         )
+        .bind(user_id)
         .fetch_optional(pool)
         .await
         .map_err(|_| AppError::Database("Falha ao buscar cliente do usuário.".to_string()))
@@ -119,22 +116,32 @@ impl Repository {
             .await
             .map_err(|_| AppError::Database("Falha ao iniciar criação do cliente.".to_string()))?;
 
-        let client = sqlx::query_as!(
-            Client,
+        let client = sqlx::query_as::<_, Client>(
             r#"
-            INSERT INTO clients (id, company_name, cnpj, phone, email, address, city, state)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO clients (
+                id,
+                client_type,
+                company_name,
+                cnpj,
+                phone,
+                email,
+                address,
+                city,
+                state
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
             "#,
-            Uuid::new_v4(),
-            dto.company_name,
-            dto.cnpj,
-            dto.phone,
-            dto.email,
-            dto.address,
-            dto.city,
-            dto.state
         )
+        .bind(Uuid::new_v4())
+        .bind(dto.client_type)
+        .bind(&dto.company_name)
+        .bind(&dto.cnpj)
+        .bind(&dto.phone)
+        .bind(&dto.email)
+        .bind(&dto.address)
+        .bind(&dto.city)
+        .bind(&dto.state)
         .fetch_one(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao criar cliente nos dados.".to_string()))?;
@@ -166,8 +173,7 @@ impl Repository {
             AppError::Database("Falha ao iniciar atualização do cliente.".to_string())
         })?;
 
-        let client = sqlx::query_as!(
-            Client,
+        let client = sqlx::query_as::<_, Client>(
             r#"
             UPDATE clients
             SET company_name = COALESCE($1, company_name),
@@ -181,15 +187,15 @@ impl Repository {
             WHERE id = $8
             RETURNING *
             "#,
-            dto.company_name,
-            dto.cnpj,
-            dto.phone,
-            dto.email,
-            dto.address,
-            dto.city,
-            dto.state,
-            id
         )
+        .bind(&dto.company_name)
+        .bind(&dto.cnpj)
+        .bind(&dto.phone)
+        .bind(&dto.email)
+        .bind(&dto.address)
+        .bind(&dto.city)
+        .bind(&dto.state)
+        .bind(id)
         .fetch_optional(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao atualizar cliente nos dados.".to_string()))?
@@ -218,13 +224,13 @@ impl Repository {
             .await
             .map_err(|_| AppError::Database("Falha ao iniciar exclusão do cliente.".to_string()))?;
 
-        let result = sqlx::query!(
+        let result = sqlx::query(
             r#"
             DELETE FROM clients
             WHERE id = $1
             "#,
-            id
         )
+        .bind(id)
         .execute(&mut *transaction)
         .await
         .map_err(|_| AppError::Database("Falha ao deletar cliente dos dados.".to_string()))?;

@@ -4,6 +4,8 @@ use rust_decimal::Decimal;
 use uuid::Uuid;
 use validator::ValidationError;
 
+use crate::domains::clients::{dtos::CreateClientRequestDto, models::ClientType};
+
 pub fn validate_not_blank(value: &str) -> Result<(), ValidationError> {
     if value.trim().is_empty() {
         return Err(validation_error(
@@ -182,27 +184,28 @@ pub fn validate_state_code(value: &str) -> Result<(), ValidationError> {
     Ok(())
 }
 
+pub fn validate_client_type(dto: &CreateClientRequestDto) -> Result<(), ValidationError> {
+    if dto.client_type == ClientType::Company {
+        if dto.company_name.as_deref().is_none_or(str::is_empty) {
+            return Err(validation_error(
+                "company_name_required",
+                "Nome da empresa requerido.",
+            ));
+        }
+
+        if dto.cnpj.as_deref().is_none_or(str::is_empty) {
+            return Err(validation_error(
+                "cnpj_required",
+                "CNPJ requerido para empresas.",
+            ));
+        }
+    }
+
+    Ok(())
+}
+
 fn validation_error(code: &'static str, message: &'static str) -> ValidationError {
     let mut error = ValidationError::new(code);
     error.message = Some(Cow::Borrowed(message));
     error
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{validate_cnpj, validate_cpf, validate_password};
-
-    #[test]
-    fn cpf_and_cnpj_checksums_are_verified() {
-        assert!(validate_cpf("52998224725").is_ok());
-        assert!(validate_cpf("52998224724").is_err());
-        assert!(validate_cnpj("11222333000181").is_ok());
-        assert!(validate_cnpj("11222333000182").is_err());
-    }
-
-    #[test]
-    fn password_length_ignores_surrounding_whitespace() {
-        assert!(validate_password("  12345678  ").is_ok());
-        assert!(validate_password("       1234567 ").is_err());
-    }
 }

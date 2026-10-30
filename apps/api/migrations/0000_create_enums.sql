@@ -6,6 +6,8 @@ CREATE TYPE USER_ROLE AS ENUM (
     'client'
 );
 
+CREATE TYPE CLIENT_TYPE AS ENUM ('individual', 'company');
+
 CREATE TYPE PROJECT_TYPE AS ENUM (
     'architecture',
     'engineering',

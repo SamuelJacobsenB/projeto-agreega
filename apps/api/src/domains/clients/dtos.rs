@@ -3,8 +3,13 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
+use crate::domains::clients::models::ClientType;
+
 #[derive(Debug, Deserialize, Validate)]
+#[validate(schema(function = "crate::validation::validate_client_type"))]
 pub struct CreateClientRequestDto {
+    pub client_type: ClientType,
+
     #[validate(length(
         min = 3,
         max = 150,
@@ -39,13 +44,17 @@ pub struct CreateClientRequestDto {
     pub state: Option<String>,
 }
 
-#[derive(Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct UpdateClientRequestDto {
-    #[validate(length(min = 3, max = 150))]
+    #[validate(length(
+        min = 3,
+        max = 150,
+        message = "Nome da empresa deve ter entre 3 e 150 caracteres."
+    ))]
     #[validate(custom(function = "crate::validation::validate_not_blank"))]
     pub company_name: Option<String>,
 
-    #[validate(length(min = 14, max = 14))]
+    #[validate(length(min = 14, max = 14, message = "CNPJ deve ter 14 dígitos."))]
     #[validate(custom(function = "crate::validation::validate_cnpj"))]
     pub cnpj: Option<String>,
 
@@ -53,7 +62,7 @@ pub struct UpdateClientRequestDto {
     pub phone: Option<String>,
 
     #[validate(email(message = "E-mail inválido."))]
-    #[validate(length(max = 255))]
+    #[validate(length(max = 255, message = "E-mail deve ter no máximo 255 caracteres."))]
     pub email: Option<String>,
 
     #[validate(length(max = 255))]
@@ -67,9 +76,10 @@ pub struct UpdateClientRequestDto {
     pub state: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct ClientResponseDto {
     pub id: Uuid,
+    pub client_type: ClientType,
     pub company_name: Option<String>,
     pub cnpj: Option<String>,
     pub phone: Option<String>,

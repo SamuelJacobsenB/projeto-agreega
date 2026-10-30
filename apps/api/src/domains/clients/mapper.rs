@@ -4,6 +4,7 @@ impl From<Client> for ClientResponseDto {
     fn from(client: Client) -> Self {
         ClientResponseDto {
             id: client.id,
+            client_type: client.client_type,
             company_name: client.company_name,
             cnpj: client.cnpj,
             phone: client.phone,
