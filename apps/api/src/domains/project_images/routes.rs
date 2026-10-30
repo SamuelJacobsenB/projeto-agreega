@@ -11,6 +11,7 @@ use crate::middlewares::rate_limit::{self, RateLimitPolicies};
 pub fn public_routes() -> Router<AppState> {
     Router::new()
         .route("/project/{project_id}", get(Handler::list_project_images))
+        .route("/covers", get(Handler::list_cover_images))
         .route(
             "/project/{project_id}/cover",
             get(Handler::get_cover_by_project_id),

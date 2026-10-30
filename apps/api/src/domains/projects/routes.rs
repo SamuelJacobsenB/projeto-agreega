@@ -6,12 +6,12 @@ use axum::{
 use super::handler::Handler;
 use crate::app::AppState;
 
-// REVISAR ROTAS E SUAS RESPECTIVAS AUTENTICAÇÕES
+pub fn public_routes() -> Router<AppState> {
+    Router::new().route("/", get(Handler::list_projects))
+}
 
 pub fn authenticated_routes() -> Router<AppState> {
-    Router::new()
-        .route("/", get(Handler::list_projects))
-        .route("/{id}", get(Handler::get_project_by_id))
+    Router::new().route("/{id}", get(Handler::get_project_by_id))
 }
 
 pub fn staff_routes() -> Router<AppState> {

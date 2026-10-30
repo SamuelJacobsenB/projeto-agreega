@@ -1,29 +1,50 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
-import type { ProjectImage } from "../../../types";
+import { Loader } from "../../../components/ui";
+import { useProjectImages } from "../../../hooks/project-images";
 
 type ProjectGalleryProps = {
+  projectId: string;
   projectName: string;
-  images: ProjectImage[];
-  activeIndex: number;
-  onSelectImage: (index: number) => void;
-  onPrevious: () => void;
-  onNext: () => void;
 };
 
 export function ProjectGallery({
+  projectId,
   projectName,
-  images,
-  activeIndex,
-  onSelectImage,
-  onPrevious,
-  onNext,
 }: ProjectGalleryProps) {
-  if (images.length === 0) return null;
+  const { data: images = [], isLoading, isError } = useProjectImages(projectId);
 
-  const safeIndex =
-    activeIndex >= 0 && activeIndex < images.length ? activeIndex : 0;
+  const [selection, setSelection] = useState({
+    projectId,
+    index: 0,
+  });
 
+  const activeIndex = selection.projectId === projectId ? selection.index : 0;
+
+  function selectImage(index: number) {
+    setSelection({ projectId, index });
+  }
+
+  function handlePrevious() {
+    selectImage(activeIndex === 0 ? images.length - 1 : activeIndex - 1);
+  }
+
+  function handleNext() {
+    selectImage(activeIndex === images.length - 1 ? 0 : activeIndex + 1);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="mt-9 flex min-h-64 items-center justify-center bg-gray-100">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isError || images.length === 0) return null;
+
+  const safeIndex = Math.min(activeIndex, images.length - 1);
   const activeImage = images[safeIndex];
 
   return (
@@ -39,7 +60,7 @@ export function ProjectGallery({
           <>
             <button
               type="button"
-              onClick={onPrevious}
+              onClick={handlePrevious}
               aria-label="Imagem anterior"
               className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 transition hover:bg-white focus-visible:outline-2"
             >
@@ -48,7 +69,7 @@ export function ProjectGallery({
 
             <button
               type="button"
-              onClick={onNext}
+              onClick={handleNext}
               aria-label="Próxima imagem"
               className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 transition hover:bg-white focus-visible:outline-2"
             >
@@ -74,10 +95,10 @@ export function ProjectGallery({
               <button
                 key={image.id}
                 type="button"
-                onClick={() => onSelectImage(index)}
+                onClick={() => selectImage(index)}
                 aria-label={`Ver imagem ${index + 1}`}
                 aria-pressed={isActive}
-                className={`h-16 w-24 shrink-0 overflow-hidden border-2 transition-all  duration-75 sm:h-20 sm:w-32 ${
+                className={`h-16 w-24 shrink-0 overflow-hidden border-2 transition-all duration-75 sm:h-20 sm:w-32 ${
                   isActive
                     ? "border-(--color-light-black)"
                     : "border-transparent opacity-65 hover:opacity-100"

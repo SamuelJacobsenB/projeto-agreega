@@ -1,40 +1,40 @@
 import { ArrowDownRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { useProjectModal } from "../../hooks/projects";
-import type { Project, ProjectImage } from "../../types";
-import { mockCoverImages, mockGalleryImages, mockProjects } from "./mocks";
+import { useProjects } from "../../hooks/projects";
+import type { Project } from "../../types";
 
-import { ProjectCard, ProjectFilters, ProjectModal } from "./components";
+import { useCoverImages } from "../../hooks/project-images";
+import {
+  ProjectCard,
+  ProjectFilters,
+  ProjectModal,
+  ProjectsError,
+  ProjectsLoading,
+} from "./components";
 import { type ProjectFilter } from "./constants";
 import { organizeProjects } from "./utils";
 
-type ProjectsProps = {
-  projects?: Project[];
-  projectImages?: ProjectImage[];
-  coverImages?: ProjectImage[];
-};
+export function Projects() {
+  const {
+    data: projects = [],
+    isLoading: loadingProjects,
+    error: projectsError,
+    refetch,
+  } = useProjects();
 
-export function Projects({
-  projects = mockProjects,
-  projectImages,
-  coverImages = mockCoverImages,
-}: ProjectsProps) {
+  const {
+    data: coverImages = [],
+    isLoading: loadingCoverImages,
+    error: coverImagesError,
+  } = useCoverImages();
+
   const [activeFilter, setActiveFilter] = useState<ProjectFilter>("all");
-
-  const allProjectImages = useMemo(() => {
-    if (projectImages) return projectImages;
-
-    if (projects === mockProjects) {
-      return [...coverImages, ...mockGalleryImages];
-    }
-
-    return coverImages;
-  }, [projectImages, projects, coverImages]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const organizedProjects = useMemo(
-    () => organizeProjects(projects, allProjectImages),
-    [projects, allProjectImages],
+    () => organizeProjects(projects, coverImages),
+    [projects, coverImages],
   );
 
   const filteredProjects = useMemo(
@@ -47,18 +47,20 @@ export function Projects({
     [organizedProjects, activeFilter],
   );
 
-  const {
-    selectedProject,
-    selectedImages,
-    activeImageIndex,
-    openProject,
-    closeProject,
-    selectImage,
-    showPreviousImage,
-    showNextImage,
-  } = useProjectModal(allProjectImages);
-
   const [featuredProject, ...otherProjects] = filteredProjects;
+
+  if (loadingProjects || loadingCoverImages) {
+    return <ProjectsLoading />;
+  }
+
+  if (projectsError || coverImagesError) {
+    return (
+      <ProjectsError
+        message={projectsError?.message ?? coverImagesError?.message ?? ""}
+        onRetry={refetch}
+      />
+    );
+  }
 
   return (
     <section
@@ -108,7 +110,7 @@ export function Projects({
               project={featuredProject.project}
               cover_url={featuredProject.cover_url}
               featured
-              onSelect={openProject}
+              onSelect={() => setSelectedProject(featuredProject.project)}
             />
 
             {otherProjects.length > 0 && (
@@ -118,7 +120,7 @@ export function Projects({
                     key={project.id}
                     project={project}
                     cover_url={cover_url}
-                    onSelect={openProject}
+                    onSelect={() => setSelectedProject(project)}
                   />
                 ))}
               </div>
@@ -154,15 +156,8 @@ export function Projects({
 
       <ProjectModal
         project={selectedProject}
-        images={selectedImages}
-        activeImageIndex={activeImageIndex}
-        onClose={closeProject}
-        onSelectImage={selectImage}
-        onPreviousImage={showPreviousImage}
-        onNextImage={showNextImage}
+        onClose={() => setSelectedProject(null)}
       />
     </section>
   );
 }
-
-export default Projects;

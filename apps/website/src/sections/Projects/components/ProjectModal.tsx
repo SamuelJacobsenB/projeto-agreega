@@ -1,30 +1,17 @@
 import { ArrowDownRight, MapPin, X } from "lucide-react";
 
 import { Modal } from "../../../components/ui/Modal";
-import type { Project, ProjectImage } from "../../../types";
+import type { Project } from "../../../types";
 import { projectTypeLabels } from "../constants";
 import { ProjectGallery } from "./ProjectGallery";
 import { ProjectInformation } from "./ProjectInformation";
 
 type ProjectModalProps = {
   project: Project | null;
-  images: ProjectImage[];
-  activeImageIndex: number;
   onClose: () => void;
-  onSelectImage: (index: number) => void;
-  onPreviousImage: () => void;
-  onNextImage: () => void;
 };
 
-export function ProjectModal({
-  project,
-  images,
-  activeImageIndex,
-  onClose,
-  onSelectImage,
-  onPreviousImage,
-  onNextImage,
-}: ProjectModalProps) {
+export function ProjectModal({ project, onClose }: ProjectModalProps) {
   if (!project) return null;
 
   const typeLabel = projectTypeLabels[project.project_type] ?? "Projeto";
@@ -91,14 +78,7 @@ export function ProjectModal({
           </p>
         </div>
 
-        <ProjectGallery
-          projectName={project.name}
-          images={images}
-          activeIndex={activeImageIndex}
-          onSelectImage={onSelectImage}
-          onPrevious={onPreviousImage}
-          onNext={onNextImage}
-        />
+        <ProjectGallery projectId={project.id} projectName={project.name} />
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-16">
           <section aria-labelledby="project-description-title">

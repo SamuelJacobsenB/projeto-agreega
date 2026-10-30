@@ -43,6 +43,7 @@ use crate::{
             staff_routes as project_images_staff_routes,
         },
         projects::routes::{
+            public_routes as projects_public_routes,
             authenticated_routes as projects_authenticated_routes,
             staff_routes as projects_staff_routes,
         },
@@ -74,6 +75,7 @@ pub fn create_router(state: AppState) -> Router {
     let public = Router::new()
         .nest("/auth", auth_public_routes(&rate_limits))
         .nest("/invitations", invitations_public_routes(&rate_limits))
+        .nest("/projects", projects_public_routes())
         .nest("/project-images", project_images_public_routes());
 
     let authenticated_routes = Router::new()

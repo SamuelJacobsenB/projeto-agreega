@@ -37,6 +37,22 @@ impl Handler {
         ))
     }
 
+    pub async fn list_cover_images(
+        State(state): State<AppState>,
+    ) -> ApiResult<Vec<ProjectImageResponseDto>> {
+        let project_images = Service::list_cover_images(&state.pool).await?;
+
+        let project_image_dtos = project_images
+            .into_iter()
+            .map(ProjectImageResponseDto::from_model)
+            .collect();
+
+        Ok((
+            StatusCode::OK,
+            ApiResponse::success("Capas dos projetos encontradas.", Some(project_image_dtos)),
+        ))
+    }
+
     pub async fn get_cover_by_project_id(
         State(state): State<AppState>,
         Path(project_id): Path<Uuid>,

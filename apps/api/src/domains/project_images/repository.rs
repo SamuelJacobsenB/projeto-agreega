@@ -33,6 +33,21 @@ impl Repository {
         })
     }
 
+    pub async fn find_covers(pool: &PgPool) -> AppResult<Vec<ProjectImage>> {
+        sqlx::query_as::<_, ProjectImage>(
+            r#"
+                SELECT *
+                FROM project_images
+                WHERE "order" = 0
+            "#,
+        )
+        .fetch_all(pool)
+        .await
+        .map_err(|_| {
+            AppError::Database("Falha ao buscar capas dos projetos nos dados.".to_string())
+        })
+    }
+
     pub async fn find_cover_by_project_id(
         pool: &PgPool,
         project_id: Uuid,

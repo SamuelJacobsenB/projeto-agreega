@@ -29,6 +29,10 @@ impl Service {
         Repository::find_by_project_id(pool, project_id).await
     }
 
+    pub async fn list_cover_images(pool: &PgPool) -> AppResult<Vec<ProjectImage>> {
+        Repository::find_covers(pool).await
+    }
+
     pub async fn get_cover_by_project_id(
         pool: &PgPool,
         project_id: Uuid,
