@@ -3,6 +3,5 @@ export const routes = [
   { label: "Sobre", href: "#sobre" },
   { label: "Serviços", href: "#servicos" },
   { label: "Projetos", href: "#projetos" },
-  { label: "Orçamento", href: "#orcamento" },
   { label: "Contato", href: "#contato" },
 ];

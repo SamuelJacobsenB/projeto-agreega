@@ -1,4 +1,4 @@
-export type Project = {
+type Project = {
   id: string;
   client_id: string;
   name: string;
@@ -29,3 +29,5 @@ type ProjectStatus =
   | "paused"
   | "completed"
   | "cancelled";
+
+export type { Project, ProjectStatus, ProjectType };
