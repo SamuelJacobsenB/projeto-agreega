@@ -2,7 +2,7 @@ import type { ProjectType } from "../../types";
 
 export type ProjectFilter = ProjectType | "all";
 
-export const projectFilters: {
+const projectFilters: {
   label: string;
   value: ProjectFilter;
 }[] = [
@@ -16,7 +16,7 @@ export const projectFilters: {
   { label: "Consultoria", value: "consulting" },
 ];
 
-export const projectTypeLabels: Record<ProjectType, string> = {
+const projectTypeLabels: Record<ProjectType, string> = {
   architecture: "Arquitetura",
   engineering: "Engenharia",
   architecture_and_engineering: "Arquitetura e Engenharia",
@@ -24,9 +24,11 @@ export const projectTypeLabels: Record<ProjectType, string> = {
   other: "Outros projetos",
 };
 
-export const projectStatusLabels = {
+const projectStatusLabels = {
   completed: "Concluído",
   in_progress: "Em andamento",
   planned: "Em planejamento",
   cancelled: "Cancelado",
 } as const;
+
+export { projectFilters, projectStatusLabels, projectTypeLabels };

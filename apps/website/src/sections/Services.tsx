@@ -90,7 +90,7 @@ export function Services() {
                   >
                     Converse com a Agreega
                     <ArrowUpRight
-                      size={17}
+                      size={16}
                       className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                     />
                   </a>
