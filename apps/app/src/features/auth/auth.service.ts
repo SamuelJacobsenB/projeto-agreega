@@ -1,4 +1,5 @@
-import { api } from "@/api";
+import { api, apiRequest } from "@/api";
+
 import type {
   AuthToken,
   LoginRequestDto,
@@ -7,11 +8,19 @@ import type {
 
 export const authService = {
   login: (dto: LoginRequestDto) =>
-    api.post<unknown, AuthToken>("/auth/login", { data: dto }),
-  logout: () => api.post("/auth/logout"),
+    apiRequest<AuthToken>(api.post("/auth/login", { data: dto })),
+
+  refresh: () => apiRequest<AuthToken>(api.post("/auth/refresh")),
+
+  logout: () => apiRequest<void>(api.post("/auth/logout")),
 
   requestPasswordReset: (email: string) =>
-    api.post("/auth/password-reset/request", { data: { email } }),
+    apiRequest<void>(
+      api.post("/auth/password-reset/request", {
+        data: { email },
+      }),
+    ),
+
   confirmPasswordReset: (dto: ResetPasswordRequestDto) =>
-    api.post("/auth/password-reset", { data: dto }),
+    apiRequest<void>(api.post("/auth/password-reset", { data: dto })),
 };
