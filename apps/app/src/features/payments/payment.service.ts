@@ -7,8 +7,8 @@ export const paymentService = {
     apiRequest<Payment[]>(api.get(`/payments/project/${projectId}`)),
 
   create: (dto: CreatePaymentDto) =>
-    apiRequest<Payment>(api.post("/payments", { data: dto })),
+    apiRequest<Payment>(api.post("/payments", dto)),
 
   update: (id: string, dto: UpdatePaymentDto) =>
-    apiRequest<Payment>(api.patch(`/payments/${id}`, { data: dto })),
+    apiRequest<Payment>(api.patch(`/payments/${id}`, dto)),
 };

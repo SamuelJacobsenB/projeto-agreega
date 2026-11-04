@@ -43,7 +43,7 @@ export const projectImageService = {
   reorder: (projectId: string, images: string[]) =>
     apiRequest<null>(
       api.patch(`/project-images/project/${projectId}/reorder`, {
-        data: { images },
+        images,
       }),
     ),
 

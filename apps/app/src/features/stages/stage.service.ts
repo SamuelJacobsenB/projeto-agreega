@@ -9,12 +9,12 @@ export const stageService = {
   getById: (id: string) => apiRequest<Stage>(api.get(`/stages/${id}`)),
 
   create: (dto: CreateStageDto) =>
-    apiRequest<Stage>(api.post("/stages", { data: dto })),
+    apiRequest<Stage>(api.post("/stages", dto)),
 
   reorder: (projectId: string, stages: string[]) =>
     apiRequest<null>(
       api.patch(`/stages/project/${projectId}/reorder`, {
-        data: { stages },
+        stages,
       }),
     ),
 

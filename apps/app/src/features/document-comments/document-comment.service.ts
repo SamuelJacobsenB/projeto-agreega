@@ -14,16 +14,17 @@ export const documentCommentService = {
 
   create: (versionId: string, dto: CreateDocumentCommentDto) =>
     apiRequest<DocumentComment>(
-      api.post(`/document-versions/document-version/${versionId}/comments`, {
-        data: dto,
-      }),
+      api.post(
+        `/document-versions/document-version/${versionId}/comments`,
+        dto,
+      ),
     ),
 
   update: (versionId: string, id: string, dto: UpdateDocumentCommentDto) =>
     apiRequest<DocumentComment>(
       api.put(
         `/document-versions/document-version/${versionId}/comments/${id}`,
-        { data: dto },
+        dto,
       ),
     ),
 

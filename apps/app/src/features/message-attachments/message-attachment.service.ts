@@ -5,7 +5,7 @@ import type { CreateMessageAttachmentDto, MessageAttachment } from "./types";
 export const messageAttachmentService = {
   create: (dto: CreateMessageAttachmentDto) =>
     apiRequest<MessageAttachment>(
-      api.post("/message-attachments", { data: dto }),
+      api.post("/message-attachments", dto),
     ),
 
   listByMessage: (messageId: string) =>

@@ -12,10 +12,10 @@ export const documentService = {
   getById: (id: string) => apiRequest<Document>(api.get(`/documents/${id}`)),
 
   create: (dto: CreateDocumentDto) =>
-    apiRequest<Document>(api.post("/documents", { data: dto })),
+    apiRequest<Document>(api.post("/documents", dto)),
 
   update: (id: string, dto: UpdateDocumentDto) =>
-    apiRequest<Document>(api.put(`/documents/${id}`, { data: dto })),
+    apiRequest<Document>(api.put(`/documents/${id}`, dto)),
 
   delete: (id: string) => apiRequest<null>(api.delete(`/documents/${id}`)),
 };

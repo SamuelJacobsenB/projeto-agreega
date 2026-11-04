@@ -13,8 +13,10 @@
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.105.1",
     "axios": "^1.21.0",
+    "lucide-react": "^1.66.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5",
     "tailwindcss": "^4.3.3",
     "zod": "^4.6.7"
   },
@@ -28,6 +30,8 @@
     "@vitejs/plugin-react": "^6.1.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "oxlint": "^1.88.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "~6.0.3",
     "vite": "^8.3.4"
   }

@@ -12,7 +12,7 @@ export const notificationService = {
 
   updateReadState: (id: string, read: boolean) =>
     apiRequest<Notification>(
-      api.patch(`/notifications/${id}`, { data: { read } }),
+      api.patch(`/notifications/${id}`, { read }),
     ),
 
   delete: (id: string) => apiRequest<null>(api.delete(`/notifications/${id}`)),

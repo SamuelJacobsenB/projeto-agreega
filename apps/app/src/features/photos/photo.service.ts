@@ -35,7 +35,7 @@ export const photoService = {
   },
 
   updateDescription: (id: string, description: string) =>
-    apiRequest<Photo>(api.patch(`/photos/${id}`, { data: { description } })),
+    apiRequest<Photo>(api.patch(`/photos/${id}`, { description })),
 
   delete: (id: string) => apiRequest<null>(api.delete(`/photos/${id}`)),
 };

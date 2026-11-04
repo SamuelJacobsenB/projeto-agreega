@@ -17,11 +17,11 @@ export const documentApprovalService = {
 
   create: (dto: CreateDocumentApprovalDto) =>
     apiRequest<DocumentApproval>(
-      api.post("/document-approvals", { data: dto }),
+      api.post("/document-approvals", dto),
     ),
 
   review: (id: string, dto: ReviewDocumentApprovalDto) =>
     apiRequest<DocumentApproval>(
-      api.put(`/document-approvals/${id}/review`, { data: dto }),
+      api.put(`/document-approvals/${id}/review`, dto),
     ),
 };

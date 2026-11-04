@@ -10,10 +10,10 @@ export const clientService = {
   getById: (id: string) => apiRequest<Client>(api.get(`/clients/${id}`)),
 
   create: (dto: CreateClientDto) =>
-    apiRequest<Client>(api.post("/clients", { data: dto })),
+    apiRequest<Client>(api.post("/clients", dto)),
 
   update: (id: string, dto: UpdateClientDto) =>
-    apiRequest<Client>(api.put(`/clients/${id}`, { data: dto })),
+    apiRequest<Client>(api.put(`/clients/${id}`, dto)),
 
   delete: (id: string) => apiRequest<null>(api.delete(`/clients/${id}`)),
 };
