@@ -32,7 +32,7 @@ export function Toast({ toast, onDismiss }: Props) {
   return (
     <div
       role={toast.variant === "error" ? "alert" : "status"}
-      className="animate-toast flex w-full items-start gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm"
+      className="animate-toast flex w-fit items-start gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm"
     >
       <Icon
         size={20}

@@ -6,6 +6,8 @@ use crate::constants::rate_limit::RateLimitSettings;
 
 #[derive(Clone)]
 pub struct Config {
+    pub app_env: String,
+
     pub port: u16,
 
     pub website_url: String,
@@ -93,6 +95,7 @@ impl Config {
         let cookie_secure = bool_env_or("COOKIE_SECURE", false)?;
 
         Ok(Self {
+            app_env: env::var("APP_ENV")?,
             port: env::var("PORT")?.parse()?,
             website_url: env::var("WEBSITE_URL")?,
             app_url: env::var("APP_URL")?,

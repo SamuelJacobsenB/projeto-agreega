@@ -15,8 +15,8 @@ export function Hero() {
           <span>Arquitetura</span>
         </span>
 
-        <h1 className="flex flex-col text-4xl font-light text-white sm:text-6xl lg:text-7xl">
-          <span className="text-6xl font-medium tracking-tight text-(--color-light-yellow) sm:text-8xl lg:text-9xl">
+        <h1 className="flex flex-col text-4xl font-light text-white sm:text-5xl lg:text-6xl">
+          <span className="text-6xl font-medium tracking-tight text-(--color-light-yellow) sm:text-7xl lg:text-8xl">
             AGREEGA
           </span>
           Engenharia e Arquitetura

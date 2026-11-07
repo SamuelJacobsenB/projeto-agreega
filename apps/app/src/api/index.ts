@@ -11,13 +11,34 @@ export const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const session = tokenStorage.get();
+
+  if (session && session.expiresAt.getTime() > Date.now()) {
+    config.headers.Authorization = `Bearer ${session.accessToken}`;
+  }
+
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
 
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    if (!originalRequest || error.response?.status !== 401) {
+      return Promise.reject(error);
+    }
+
+    const url = originalRequest.url ?? "";
+
+    const excludedRoutes = ["/auth/login", "/auth/refresh", "/auth/logout"];
+
+    if (
+      originalRequest._retry ||
+      excludedRoutes.some((route) => url.includes(route))
+    ) {
       return Promise.reject(error);
     }
 
@@ -26,7 +47,7 @@ api.interceptors.response.use(
     try {
       const { data } = await api.post("/auth/refresh");
 
-      tokenStorage.set(data.access_token, data.expires_at);
+      tokenStorage.set(data.access_token, new Date(data.expires_at));
 
       originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
 

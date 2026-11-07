@@ -7,10 +7,10 @@ import type { LoginRequestDto, ResetPasswordRequestDto } from "../types";
 
 export function useLogin() {
   const { mutateAsync, isPending, error } = useMutation({
-    mutationFn: (dto: LoginRequestDto) => authService.login(dto),
+    mutationFn: async (dto: LoginRequestDto) => await authService.login(dto),
     onSuccess: ({ data }) => {
       if (data) {
-        tokenStorage.set(data.access_token, data.expires_at);
+        tokenStorage.set(data.access_token, new Date(data.expires_at));
       }
     },
   });

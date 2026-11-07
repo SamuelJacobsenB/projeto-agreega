@@ -1,11 +1,12 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { Button, Error, Input, Loader } from "@/components";
-import { useToast } from "@/hooks";
+import { useAuth, useToast } from "@/hooks";
 import { getApiError } from "@/lib";
 import type { ApiError } from "@/types";
 
+import { LoadingPage } from "@/layouts";
 import { useLogin } from "../hooks";
 import type { LoginRequestDto } from "../types";
 
@@ -13,6 +14,7 @@ export function LoginPage() {
   const navigate = useNavigate();
 
   const { notify } = useToast();
+  const { isAuthenticated, isLoading, refreshSession } = useAuth();
 
   const { login, isPending, error } = useLogin();
   const [submitError, setSubmitError] = useState<ApiError | null>(null);
@@ -35,11 +37,20 @@ export function LoginPage() {
     e.preventDefault();
     try {
       const { message } = await login(dto);
+      await refreshSession();
       notify.success(message);
       navigate("/dashboard", { replace: true });
     } catch (error) {
       setSubmitError(getApiError(error));
     }
+  }
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

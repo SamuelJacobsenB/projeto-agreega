@@ -1,5 +1,5 @@
 export function Loader() {
   return (
-    <div className="animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-foreground" />
   );
 }

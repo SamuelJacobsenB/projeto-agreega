@@ -1,4 +1,7 @@
 export const paths = {
+  app: {
+    dashboard: "/dashboard",
+  },
   auth: {
     login: "/login",
     requestPasswordReset: "/redefinir-senha/solicitar",

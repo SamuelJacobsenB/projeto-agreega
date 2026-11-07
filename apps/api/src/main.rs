@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use agreega_api::{
     app::{AppState, router::create_router},
     config::Config,
+    dev::create_admin_user,
     infrastructure::{db::connection::create_pool, email::EmailService},
 };
 use tracing::Level;
@@ -25,6 +26,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = create_pool(&config.database_url).await?;
 
     let email_service = EmailService::new(config.email_api_key.clone(), config.email_from.clone());
+
+    if &config.app_env == "dev" {
+        create_admin_user(&pool).await?;
+    }
 
     let state = AppState {
         pool,
