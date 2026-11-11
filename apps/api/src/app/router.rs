@@ -11,6 +11,7 @@ use crate::{
             authenticated_routes as clients_authenticated_routes,
             staff_routes as clients_staff_routes,
         },
+        dashboard::routes::authenticated_routes as dashboard_authenticated_routes,
         document_approvals::routes::{
             authenticated_routes as document_approvals_authenticated_routes,
             staff_routes as document_approvals_staff_routes,
@@ -43,9 +44,8 @@ use crate::{
             staff_routes as project_images_staff_routes,
         },
         projects::routes::{
-            public_routes as projects_public_routes,
             authenticated_routes as projects_authenticated_routes,
-            staff_routes as projects_staff_routes,
+            public_routes as projects_public_routes, staff_routes as projects_staff_routes,
         },
         stages::routes::{
             authenticated_routes as stages_authenticated_routes,
@@ -81,6 +81,7 @@ pub fn create_router(state: AppState) -> Router {
     let authenticated_routes = Router::new()
         .nest("/auth", auth_authenticated_routes())
         .nest("/clients", clients_authenticated_routes())
+        .nest("/dashboard", dashboard_authenticated_routes())
         .nest("/projects", projects_authenticated_routes())
         .nest("/users", users_authenticated_routes())
         .nest("/stages", stages_authenticated_routes())

@@ -1,6 +1,7 @@
 pub mod audit;
 pub mod auth;
 pub mod clients;
+pub mod dashboard;
 pub mod document_approvals;
 pub mod document_comments;
 pub mod document_versions;

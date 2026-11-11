@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { dashboardQueryKeys } from "@/features/dashboard/query-keys";
+
 import { stageService } from "../stage.service";
 import { stageQueryKeys } from "../query-keys";
 import type { CreateStageDto } from "../types";
@@ -48,6 +50,9 @@ export function useDeleteStage() {
   return useMutation({
     mutationFn: stageService.delete,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: stageQueryKeys.all }),
+        Promise.all([
+          queryClient.invalidateQueries({ queryKey: stageQueryKeys.all }),
+          queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+        ]),
   });
 }
